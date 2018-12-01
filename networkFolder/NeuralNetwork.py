@@ -1,10 +1,11 @@
-from typing import List, Callable
+from typing import List, Type
+import Functions
 import Neuron
 
 
 class NeuralNetwork:
     def __init__(self, layers_amount: int, neurons_amount: List[int],
-                 weight_matrix: List[List[float]], act_functions: List[Callable]):  # TODO może chcemy niezależne wagi(?)
+                 weight_matrix: List[List[float]], act_functions: List[Type[Functions.FuncAbstract]]):
         # \/ \/Checking if parameters are legal.\/ \/
         assert layers_amount > 0, "layers_amount(%d) is not greater than 0" % layers_amount
         assert len(neurons_amount) == layers_amount,\
@@ -29,21 +30,34 @@ class NeuralNetwork:
             self.layers.append([])
             for neuronN in range(neurons_amount[layerK]):
                 self.layers[layerK].append(Neuron.Neuron(weight_matrix[layerK], act_functions[layerK]))
-        for k in range(layers_amount):  # TODO do wywalenia
-            print("LAYER %d" % k)
-            for n in range(neurons_amount[k]):
-                print(self.layers[k][n].activationFunction)
-                print(self.layers[k][n].weights)
+        #for k in range(layers_amount):  # TODO do wywalenia
+            #print("LAYER %d" % k)
+            #for n in range(neurons_amount[k]):
+                #print(self.layers[k][n].activationFunction)
+                #print(self.layers[k][n].weights)
+
+    def adjust(self, adjust_matrix: List[List[List[float]]]):
+        # Checking if adjust_matrix is legal.
+        assert len(adjust_matrix) == len(self.layers)
+        for k in range(len(self.layers)):
+            assert len(adjust_matrix[k]) == len(self.layers[k][0].weights)
+        # Adjusting weights.
+        for layerK in range(len(self.layers)):
+            for neuronN in range(len(self.layers[layerK])):
+                self.layers[layerK][neuronN].adjust_weights(adjust_matrix[layerK][neuronN])
 
     def train(self, training_set: list):  # TODO
         # TODO
         pass
 
-    def process_input(self, input_vector: List[float]) -> List[float]:
+    def kfold_train(self):  # TODO
+        pass
+
+    def guess(self, input_vector: List[float]) -> List[float]:
         # Checking if input is legal.
         assert len(input_vector) == len(self.layers[0][0].weights)-1,\
-            "Size of inputMatrix is (%d), but layer (0) expects input of size (%d+1):" \
-            "\ninputMatrix: %s\nself.layers[0][0].weights: %s" %\
+            "Size of input_vector is (%d), but layer (0) expects input of size (%d+1):" \
+            "\ninput_vector: %s\nself.layers[0][0].weights: %s" %\
             (len(input_vector), len(self.layers[0][0].weights)-1, input_vector, self.layers[0][0].weights)
         # Start of processing.
         result: List[float] = input_vector.copy()
@@ -52,4 +66,5 @@ class NeuralNetwork:
             for n in range(len(self.layers[k])):
                 iteration_result.append(self.layers[k][n].process_input(result))
             result = iteration_result
+        print("Input %s gave result: %s" % (input_vector, result))
         return result
