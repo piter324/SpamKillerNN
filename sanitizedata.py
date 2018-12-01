@@ -38,9 +38,15 @@ def do_stemming(text_arr):
     return text_arr
 
 
+def prepare_csv(filename):
+    csv_arr = get_csv_to_array(filename)
+    for i in range(len(csv_arr)):
+        # print("------")
+        csv_arr[i][2] = sanitize(csv_arr[i][2])
+        csv_arr[i][4] = sanitize(csv_arr[i][4])
+        # print(csv_arr[i])
+    return csv_arr
+
 if __name__ == '__main__':
-    csv_arr = get_csv_to_array("csv01.csv")
-    for item in csv_arr:
-        print("------")
-        print(sanitize(item[2]))
-        print(sanitize(item[3]))
+    csv_input = prepare_csv("csv01.csv")
+    print(csv_input)
