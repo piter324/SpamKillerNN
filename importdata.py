@@ -115,6 +115,9 @@ if __name__ == "__main__":
     mypath_ham = "../ham/easy_ham/"
     mypath_spam = "../spam/spam_2/"
     create_csv("csv01.txt", mypath_ham, '0')
+    fh = open("csv01.txt", "a")
+    fh.write("\n")
+    fh.close()
     create_csv("csv01.txt", mypath_spam, '1')
 
 
