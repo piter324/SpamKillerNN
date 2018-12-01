@@ -1,7 +1,7 @@
 import csv
 import re
-import nltk.stem
 from nltk.corpus import stopwords
+import nltk.stem
 
 def get_csv_to_array(filename):
     csv_arr = []
@@ -32,7 +32,7 @@ def remove_stopwords(text_arr):
     return new_text_arr
 
 def do_stemming(text_arr):
-    stemmer = SnowballStemmer("english") # english stemmer works better than porter stemmer
+    stemmer = nltk.stem.SnowballStemmer("english") # english stemmer works better than porter stemmer
     for i in range(len(text_arr)):
         text_arr[i] = stemmer.stem(text_arr[i])
     return text_arr
@@ -41,5 +41,6 @@ def do_stemming(text_arr):
 if __name__ == '__main__':
     csv_arr = get_csv_to_array("csv01.csv")
     for item in csv_arr:
+        print("------")
         print(sanitize(item[2]))
         print(sanitize(item[3]))
