@@ -14,7 +14,7 @@ def get_csv_to_array(filename):
 
 def sanitize(text):
     text = text.lower() # text to lowercase
-    text = re.sub(r'[^\w\s]','',text) # remove punctuation
+    text = re.sub(r'[^\w\s]',' ',text) # remove punctuation
     text = re.sub('\s\s+',' ',text) # replace multiple spaces with just one
     text_arr = []
     for word in text.split(' '):
@@ -48,5 +48,5 @@ def prepare_csv(filename):
     return csv_arr
 
 if __name__ == '__main__':
-    csv_input = prepare_csv("csv01.csv")
-    print(csv_input)
+    csv_output = prepare_csv("csv01.csv")
+    print(csv_output)
