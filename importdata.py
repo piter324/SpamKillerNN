@@ -39,8 +39,9 @@ def parse_html(msg):
     text = soup.get_text()
     return text
 
-def no_commas(text):
-    return text.replace(",", "")
+def no_commas_or_quotation_marks(text):
+    text = text.replace(",", " ")
+    return text.replace("\"", " ")
 
 #data format: (is_spam ('0' or '1'), from, subject, is_formatted ('0' or '1'), message)
 def get_data_for_csv(content, is_spam):
@@ -49,13 +50,13 @@ def get_data_for_csv(content, is_spam):
         header = content[0:start_of_mail]
         message = content[start_of_mail+1:-1]
         from_field, subj_field = get_mail_info(header)
-        from_field = no_commas(from_field)
-        subj_field = no_commas(subj_field)
+        from_field = no_commas_or_quotation_marks(from_field)
+        subj_field = no_commas_or_quotation_marks(subj_field)
         is_formatted = '0'
         if need_html_parsing(message):
             message = parse_html(message)
             is_formatted = '1'
-        message = no_commas(message)
+        message = no_commas_or_quotation_marks(message)
         if from_field is not "": 
              from_field = "\"" + from_field + "\""
         if subj_field is not "": 
