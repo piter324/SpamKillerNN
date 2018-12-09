@@ -37,14 +37,18 @@ fl: float = f()  # PyCharm sees no problems here :(
 #nn = NeuralNetwork(2, [2, 3], [[1, 2, 3, 4], [-1, -2, -3]],
 #                   [None, None])
 time.sleep(1)
-nn2 = NeuralNetwork(2, [2, 1], [[-1, -2, 3], [3, 2, 1]], [Functions.Sigmoid, None])
+nn2 = NeuralNetwork(2, [2, 1], [[-1, -2, 3], [3, 2, 1]], [Functions.Sigmoid, None], Functions.DiffSquare)
 time.sleep(1)
-nn3 = NeuralNetwork(3, [3, 4, 1],
-                    [[1, 3, 2], [4, 6, -2, -3], [3, 2, -1, -2, 3]], [Functions.Sigmoid, Functions.Sigmoid, None])
+nn3 = NeuralNetwork(3, [3, 4, 1], [[1, 3, 2], [4, 6, -2, -3], [3, 2, -1, -2, 3]],
+                    [Functions.Sigmoid, Functions.Sigmoid, None], Functions.DiffSquare)
 time.sleep(1)
-test_tuple1 = NetworkTester.test(nn2, ts)
+
+nt2 = NetworkTester(nn2)
+nt3 = NetworkTester(nn3)
+
+test_tuple1 = nt2.test(ts)
 print("Test returned:\nTarget function: %s\nCorrectness ratio: %s" % (test_tuple1[0],test_tuple1[1]))
 time.sleep(1)
-test_tuple2 = NetworkTester.test(nn3, ts)
+test_tuple2 = nt3.test(ts)
 print("Test returned:\nTarget function: %s\nCorrectness ratio: %s" % (test_tuple2[0], test_tuple2[1]))
 #print(nn.process_input([1, 2, 2]))

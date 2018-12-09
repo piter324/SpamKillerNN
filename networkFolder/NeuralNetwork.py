@@ -1,11 +1,11 @@
-from typing import List, Type
+from typing import List, Type, Tuple
 import Functions
 import Neuron
 
 
 class NeuralNetwork:
-    def __init__(self, layers_amount: int, neurons_amount: List[int],
-                 weight_matrix: List[List[float]], act_functions: List[Type[Functions.FuncAbstract]]):
+    def __init__(self, layers_amount: int, neurons_amount: List[int], weight_matrix: List[List[float]],
+                 act_functions: List[Type[Functions.FuncAbstract]], loss_function: Type[Functions.LossFuncAbstract]):
         # \/ \/Checking if parameters are legal.\/ \/
         assert layers_amount > 0, "layers_amount(%d) is not greater than 0" % layers_amount
         assert len(neurons_amount) == layers_amount,\
@@ -25,6 +25,7 @@ class NeuralNetwork:
                  k-1, neurons_amount[k-1], k, len(weight_matrix[k]))
         # /\ /\Checking if parameters are legal./\ /\
         # Initializing variables.
+        self.loss_function = loss_function
         self.layers: List[List[Neuron.Neuron]] = []
         for layerK in range(layers_amount):
             self.layers.append([])
@@ -36,6 +37,7 @@ class NeuralNetwork:
                 #print(self.layers[k][n].activationFunction)
                 #print(self.layers[k][n].weights)
 
+    # \/\/ TRAINING STUFF \/\/
     def adjust(self, adjust_matrix: List[List[List[float]]]):
         # Checking if adjust_matrix is legal.
         assert len(adjust_matrix) == len(self.layers)
@@ -46,12 +48,38 @@ class NeuralNetwork:
             for neuronN in range(len(self.layers[layerK])):
                 self.layers[layerK][neuronN].adjust_weights(adjust_matrix[layerK][neuronN])
 
-    def train(self, training_set: list):  # TODO
+    def examine_single_pair(self, pair: Tuple[List[float], List[float]]) -> List[List[List[float]]]:
+        s: List[List[float]] = []  # 2D matrix of all sums, s[k][i]: k - layer index, i - neuron index
+        # TODO ^ maybe i can calculate ∂act_func(ski)/∂ski during processing result instead of saving only sums
+        y: List[List[float]] = []  # 2D matrix of all layers' outputs, y[k]: k-th layer output
+
+        # process result and save to s and y
+
+        derivatives_matrix: List[List[List[float]]] = []
+
+        # TODO
+        # we might not want this loop to look like this
+        for k in range(len(self.layers)):  # k-th layer
+            layers_derivs_vectors: List[List[float]] = []
+            for i in range(len(self.layers[k])):  # i - i-th neuron in k-th layer
+                deriv_vector: List[float] = []
+                for j in range(len(self.layers[k][i].weights)):  # j - weight index of i-th neuron in k-th layer
+                    dqdw: float = 0
+
+                    # calculate dqdw
+
+                    deriv_vector.append(dqdw)
+                layers_derivs_vectors.append(deriv_vector)
+            derivatives_matrix.append(layers_derivs_vectors)
+        return derivatives_matrix
+
+    def train(self, training_set: list, learning_rate: float):  # TODO
         # TODO
         pass
 
     def kfold_train(self):  # TODO
         pass
+    # /\/\ TRAINING STUFF /\/\
 
     def guess(self, input_vector: List[float]) -> List[float]:
         # Checking if input is legal.
