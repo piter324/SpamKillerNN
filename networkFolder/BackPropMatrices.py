@@ -1,7 +1,6 @@
 from typing import List, Union
 
 
-# TODO total garbage, write this from zero again
 class BackPropMatrices:
     def __init__(self, neural_network):
         self.neural_network = neural_network
