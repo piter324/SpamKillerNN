@@ -1,6 +1,8 @@
-from typing import List, Type, Tuple
+from typing import List, Type
 import Functions
 import Neuron
+from BackPropMatrices import BackPropMatrices
+import time
 
 
 class NeuralNetwork:
@@ -48,30 +50,47 @@ class NeuralNetwork:
             for neuronN in range(len(self.layers[layerK])):
                 self.layers[layerK][neuronN].adjust_weights(adjust_matrix[layerK][neuronN])
 
-    def examine_single_pair(self, pair: Tuple[List[float], List[float]]) -> List[List[List[float]]]:
-        s: List[List[float]] = []  # 2D matrix of all sums, s[k][i]: k - layer index, i - neuron index
-        # TODO ^ maybe i can calculate ∂act_func(ski)/∂ski during processing result instead of saving only sums
-        y: List[List[float]] = []  # 2D matrix of all layers' outputs, y[k]: k-th layer output
+    def examine_single_pair(self, input_data: List[float], answer: List[float]) -> List[List[List[float]]]:
+        """Proceeds one training example and returns matrix of loss functions derivatives
+        in respect to all weights - dq/dwkij"""
+        back_prop_matrices = BackPropMatrices(self)
 
-        # process result and save to s and y
+        # process result and save derivatives of activation function and layers' outputs
+        result: List[float] = input_data.copy()
+        result.append(1)
+        back_prop_matrices.y.append(result.copy())
+        for layerK in range(len(self.layers)):
+            iteration_result: List[float] = []
+            for neuronI in range(len(self.layers[layerK])):
+                neuron_output: float = self.layers[layerK][neuronI].process_input(result)
+                iteration_result.append(neuron_output)
+                # TODO \/\/ probably can put this directly into matrix
+                back_prop_matrices.set_deriv(layerK, neuronI,
+                                             self.layers[layerK][neuronI].activationFunction.derivative(neuron_output))
+            iteration_result.append(1)
+            result = iteration_result
+            back_prop_matrices.y.append(result.copy())
+        print("Input %s gave result: %s" % (input_data, result))
+        print(back_prop_matrices.y)
+        back_prop_matrices.init_last_dq_dykj(result.copy(), answer.copy())
 
-        derivatives_matrix: List[List[List[float]]] = []
-
+        # calculating weights' derivatives matrix
+        weight_derivs_matrix: List[List[List[float]]] = []  # dq/dwkij
         # TODO
-        # we might not want this loop to look like this
-        for k in range(len(self.layers)):  # k-th layer
+        for layerK in range(len(self.layers)-1, -1, -1):
             layers_derivs_vectors: List[List[float]] = []
-            for i in range(len(self.layers[k])):  # i - i-th neuron in k-th layer
-                deriv_vector: List[float] = []
-                for j in range(len(self.layers[k][i].weights)):  # j - weight index of i-th neuron in k-th layer
-                    dqdw: float = 0
-
-                    # calculate dqdw
-
-                    deriv_vector.append(dqdw)
-                layers_derivs_vectors.append(deriv_vector)
-            derivatives_matrix.append(layers_derivs_vectors)
-        return derivatives_matrix
+            for neuronI in range(len(self.layers[layerK])):
+                derivs_vector: List[float] = []
+                for weightJ in range(len(self.layers[layerK][neuronI].weights)):
+                    # TODO calculate dqdw
+                    print("LAYER: %d ; NEURON: %d ; WEIGHT: %d" % (layerK, neuronI, weightJ))
+                    dqdw: float = back_prop_matrices.afunc_derivs_matrix[layerK][neuronI] *\
+                                  back_prop_matrices.y[layerK][weightJ]
+                    dqdw = dqdw * back_prop_matrices.get_dq_dykj(layerK, neuronI)
+                    derivs_vector.append(dqdw)
+                layers_derivs_vectors.append(derivs_vector)
+            weight_derivs_matrix.append(layers_derivs_vectors)
+        return weight_derivs_matrix
 
     def train(self, training_set: list, learning_rate: float):  # TODO
         # TODO
@@ -81,7 +100,7 @@ class NeuralNetwork:
         pass
     # /\/\ TRAINING STUFF /\/\
 
-    def guess(self, input_vector: List[float]) -> List[float]:
+    def make_guess(self, input_vector: List[float]) -> List[float]:
         # Checking if input is legal.
         assert len(input_vector) == len(self.layers[0][0].weights)-1,\
             "Size of input_vector is (%d), but layer (0) expects input of size (%d+1):" \
@@ -89,10 +108,12 @@ class NeuralNetwork:
             (len(input_vector), len(self.layers[0][0].weights)-1, input_vector, self.layers[0][0].weights)
         # Start of processing.
         result: List[float] = input_vector.copy()
-        for k in range(len(self.layers)):
+        result.append(1)
+        for layerK in range(len(self.layers)):
             iteration_result: List[float] = []
-            for n in range(len(self.layers[k])):
-                iteration_result.append(self.layers[k][n].process_input(result))
+            for neuronI in range(len(self.layers[layerK])):
+                iteration_result.append(self.layers[layerK][neuronI].process_input(result))
+            iteration_result.append(1)
             result = iteration_result
         print("Input %s gave result: %s" % (input_vector, result))
         return result

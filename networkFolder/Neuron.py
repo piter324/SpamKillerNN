@@ -21,10 +21,10 @@ class Neuron:
     def process_input(self, input_vector: List[float]) -> float:
         """Makes neuron process given input."""
         # TODO do wywalenia bo siec bedzie to sprawdzac
-        assert len(input_vector) == len(self.weights)-1,\
-            "neuron %s requires input of size %d, got %d" % (self, len(self.weights)-1, len(input_vector))
+        assert len(input_vector) == len(self.weights),\
+            "neuron %s requires input of size %d, got %d" % (self, len(self.weights), len(input_vector))
         input_vector_copy: List[float] = input_vector.copy()
-        input_vector_copy.append(1)
+        #input_vector_copy.append(1)
         result: float = np.dot(input_vector_copy, self.weights)
         return self.activationFunction.func(result)
 

@@ -10,10 +10,10 @@ class NetworkTester:
         self.tested_network = neural_network
 
     def calc_loss(self, guess: List[float], answer: List[float]) -> float:
-        """Calculates loss with formula: q = ||answer - guess||^2"""
+        """Calculates loss with network's loss formula"""
         print("Guess: %s" % guess)
         print("Answer: %s" % answer)
-        return self.tested_network.loss_function(guess, answer)
+        return self.tested_network.loss_function.func(guess, answer)
 
     def test(self, training_set: TrainingSet) -> Tuple[float, float]:
         # Checking if training_set is legal for neural_network
@@ -24,7 +24,7 @@ class NetworkTester:
         j_sum: float = 0
         correct_counter: int = 0
         for pair_index in range(len(training_set.data)):
-            single_result: List[float] = self.tested_network.guess(training_set.data[pair_index])
+            single_result: List[float] = self.tested_network.make_guess(training_set.data[pair_index])
             loss: float = NetworkTester.calc_loss(self, single_result, training_set.answers[pair_index])
             if loss == 0:
                 #print("correct")
