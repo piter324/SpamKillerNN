@@ -1,10 +1,10 @@
 from typing import List, Type, Tuple
-import networkFolder.Functions
-import networkFolder.Neuron
-from networkFolder.BackPropMatrices import BackPropMatrices
-from networkFolder.TrainingSet import TrainingSet
-from networkFolder.NetworkTester import NetworkTester
-from networkFolder.MatrixMath import MatrixMath
+import Functions
+import Neuron
+from BackPropMatrices import BackPropMatrices
+from TrainingSet import TrainingSet
+from NetworkTester import NetworkTester
+from MatrixMath import MatrixMath
 import numpy as np
 import time
 
