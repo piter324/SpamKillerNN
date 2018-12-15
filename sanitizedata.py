@@ -1,5 +1,6 @@
 import csv
 import re
+from random import shuffle
 from nltk.corpus import stopwords
 import nltk.stem
 
@@ -15,13 +16,17 @@ def get_csv_to_array(filename):
 def sanitize(text):
     text = text.lower() # text to lowercase
     text = re.sub(r'[^\w\s]',' ',text) # remove punctuation
+    text = re.sub(r'\n',' ',text) # replace multiple spaces with just one
     text = re.sub('\s\s+',' ',text) # replace multiple spaces with just one
     text_arr = []
     for word in text.split(' '):
         if(len(word) <= 20): text_arr.append(word)
     text_arr = remove_stopwords(text_arr)
     text_arr = do_stemming(text_arr)
-    return text_arr
+    text_arr2 = []
+    for word in text_arr:
+        if(len(word) > 1): text_arr2.append(word)
+    return text_arr2
 
 def remove_stopwords(text_arr):
     stopwords_arr = stopwords.words("english")
@@ -45,8 +50,9 @@ def prepare_csv(filename):
         csv_arr[i][2] = sanitize(csv_arr[i][2])
         csv_arr[i][4] = sanitize(csv_arr[i][4])
         # print(csv_arr[i])
+    shuffle(csv_arr)
     return csv_arr
 
 if __name__ == '__main__':
-    csv_output = prepare_csv("csv01.csv")
-    print(csv_output)
+    csv_output = prepare_csv("csv01_properUTF8.txt")
+    print(csv_output[0:5])
