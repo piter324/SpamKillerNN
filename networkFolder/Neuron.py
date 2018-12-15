@@ -24,9 +24,8 @@ class Neuron:
         assert len(input_vector) == len(self.weights),\
             "neuron %s requires input of size %d, got %d" % (self, len(self.weights), len(input_vector))
         input_vector_copy: List[float] = input_vector.copy()
-        #input_vector_copy.append(1)
         result: float = np.dot(input_vector_copy, self.weights)
         return self.activationFunction.func(result)
 
     def adjust_weights(self, adjust_vector: List[float]):
-        self.weights = np.subtract(self.weights, adjust_vector)
+        self.weights = np.add(self.weights, adjust_vector)

@@ -1,7 +1,11 @@
-from typing import List, Type
+from typing import List, Type, Tuple
 import Functions
 import Neuron
 from BackPropMatrices import BackPropMatrices
+from TrainingSet import TrainingSet
+from NetworkTester import NetworkTester
+from MatrixMath import MatrixMath
+import numpy as np
 import time
 
 
@@ -40,15 +44,17 @@ class NeuralNetwork:
                 #print(self.layers[k][n].weights)
 
     # \/\/ TRAINING STUFF \/\/
-    def adjust(self, adjust_matrix: List[List[List[float]]]):
+    def adjust_weights(self, adjust_matrix: List[List[List[float]]]):
         # Checking if adjust_matrix is legal.
+        # TODO it's something wrong with this check for sure
         assert len(adjust_matrix) == len(self.layers)
         for k in range(len(self.layers)):
-            assert len(adjust_matrix[k]) == len(self.layers[k][0].weights)
+            for i in range(len(self.layers[k])):
+                assert len(adjust_matrix[k][i]) == len(self.layers[k][i].weights)
         # Adjusting weights.
         for layerK in range(len(self.layers)):
-            for neuronN in range(len(self.layers[layerK])):
-                self.layers[layerK][neuronN].adjust_weights(adjust_matrix[layerK][neuronN])
+            for neuronI in range(len(self.layers[layerK])):
+                self.layers[layerK][neuronI].adjust_weights(adjust_matrix[layerK][neuronI])
 
     def examine_single_pair(self, input_data: List[float], answer: List[float]) -> List[List[List[float]]]:
         """Proceeds one training example and returns matrix of loss functions derivatives
@@ -57,9 +63,9 @@ class NeuralNetwork:
 
         # process result and save derivatives of activation function and layers' outputs
         result: List[float] = input_data.copy()
-        result.append(1)
-        back_prop_matrices.y.append(result.copy())
         for layerK in range(len(self.layers)):
+            result.append(1)
+            back_prop_matrices.y.append(result.copy())
             iteration_result: List[float] = []
             for neuronI in range(len(self.layers[layerK])):
                 neuron_output: float = self.layers[layerK][neuronI].process_input(result)
@@ -67,34 +73,72 @@ class NeuralNetwork:
                 # TODO \/\/ probably can put this directly into matrix
                 back_prop_matrices.set_deriv(layerK, neuronI,
                                              self.layers[layerK][neuronI].activationFunction.derivative(neuron_output))
-            iteration_result.append(1)
             result = iteration_result
-            back_prop_matrices.y.append(result.copy())
-        print("Input %s gave result: %s" % (input_data, result))
-        print(back_prop_matrices.y)
+        back_prop_matrices.y.append(result.copy())
+        #print("Input %s gave result: %s" % (input_data, result))
+        #print("back_prop_matrices.y: %s" % back_prop_matrices.y)
         back_prop_matrices.init_last_dq_dykj(result.copy(), answer.copy())
 
         # calculating weights' derivatives matrix
         weight_derivs_matrix: List[List[List[float]]] = []  # dq/dwkij
-        # TODO
         for layerK in range(len(self.layers)-1, -1, -1):
             layers_derivs_vectors: List[List[float]] = []
             for neuronI in range(len(self.layers[layerK])):
                 derivs_vector: List[float] = []
                 for weightJ in range(len(self.layers[layerK][neuronI].weights)):
-                    # TODO calculate dqdw
-                    print("LAYER: %d ; NEURON: %d ; WEIGHT: %d" % (layerK, neuronI, weightJ))
+                    #print("LAYER: %d ; NEURON: %d ; WEIGHT: %d" % (layerK, neuronI, weightJ))
                     dqdw: float = back_prop_matrices.afunc_derivs_matrix[layerK][neuronI] *\
                                   back_prop_matrices.y[layerK][weightJ]
                     dqdw = dqdw * back_prop_matrices.get_dq_dykj(layerK, neuronI)
                     derivs_vector.append(dqdw)
                 layers_derivs_vectors.append(derivs_vector)
-            weight_derivs_matrix.append(layers_derivs_vectors)
+            weight_derivs_matrix = [layers_derivs_vectors] + weight_derivs_matrix  # prepend instead of append
+        #print("WEIGHT %s" % weight_derivs_matrix)
         return weight_derivs_matrix
 
-    def train(self, training_set: list, learning_rate: float):  # TODO
-        # TODO
-        pass
+    def calc_gradientj(self, training_set: TrainingSet) -> List[List[List[float]]]:
+        # gradient of J(w) function that we want to minimize
+        gradient: List[List[List[float]]] = self.examine_single_pair(training_set.data[0], training_set.answers[0])
+        for pairP in range(1, len(training_set.data), 1):
+            #print("GRADIENT: %s" % gradient)
+            #time.sleep(1)
+            gradient = MatrixMath.add3d(gradient, self.examine_single_pair(training_set.data[pairP], training_set.answers[pairP]))
+            #gradient = np.add(gradient, self.examine_single_pair(training_set.data[pairP], training_set.answers[pairP]))
+        #print("GRADIENT %s" % gradient)
+        scalar: float = 1 / len(training_set.data)
+        #time.sleep(1)
+        #print("GRADIENT 1 %s" % gradient)
+        # multiply matrix by scalar cause numpy has no such function :)
+        gradient = MatrixMath.mul_scalar3d(gradient, scalar)
+        #print("GRADIENT 2 %s" % gradient)
+        return gradient
+
+    def train(self, training_set: TrainingSet, learning_rate: float, learning_target: float):
+        assert 0 < learning_target <= 1
+        network_tester: NetworkTester = NetworkTester(self)
+        test_result: Tuple[float, float] = network_tester.test(training_set)
+        start_loss = test_result[0]  # TODO for summary only
+        print("###STARTING TRAINING TO TRAINING...###\nBefore training:\nTarget function: %s\nCorrect ratio: %s\n" %
+              (test_result[0], test_result[1]))
+
+        iteration: int = 0
+        while test_result[1] < learning_target and iteration < 2000:
+            gradient: List[List[List[float]]] = self.calc_gradientj(training_set)
+            #print(gradient)
+            minus_beta_gradient = gradient.copy()
+            #print(minus_beta_gradient)
+            # multiply matrix by scalar
+            minus_beta_gradient = MatrixMath.mul_scalar3d(minus_beta_gradient, learning_rate)  # TODO why it works without minus xD
+
+            print("ITERATION %d minus_beta_gradient: %s" % (iteration, minus_beta_gradient))
+            #time.sleep(1)
+            self.adjust_weights(minus_beta_gradient)
+            test_result = network_tester.test(training_set)
+            iteration = iteration + 1
+            print("After { %d } iterations:\nTarget function: %s\nCorrect ratio: %s"
+                  % (iteration, test_result[0], test_result[1]))
+        print("###END OF TRAINING###")
+        print("Trained from loss function %s to %s" % (start_loss, test_result[0]))
 
     def kfold_train(self):  # TODO
         pass
@@ -106,14 +150,14 @@ class NeuralNetwork:
             "Size of input_vector is (%d), but layer (0) expects input of size (%d+1):" \
             "\ninput_vector: %s\nself.layers[0][0].weights: %s" %\
             (len(input_vector), len(self.layers[0][0].weights)-1, input_vector, self.layers[0][0].weights)
+
         # Start of processing.
         result: List[float] = input_vector.copy()
-        result.append(1)
         for layerK in range(len(self.layers)):
+            result.append(1)
             iteration_result: List[float] = []
             for neuronI in range(len(self.layers[layerK])):
                 iteration_result.append(self.layers[layerK][neuronI].process_input(result))
-            iteration_result.append(1)
             result = iteration_result
         print("Input %s gave result: %s" % (input_vector, result))
         return result

@@ -1,12 +1,11 @@
 import Functions
-from NeuralNetwork import NeuralNetwork
 from TrainingSet import TrainingSet
 from typing import List, Tuple, Type
 import numpy as np
 
 
 class NetworkTester:
-    def __init__(self, neural_network: NeuralNetwork):
+    def __init__(self, neural_network):
         self.tested_network = neural_network
 
     def calc_loss(self, guess: List[float], answer: List[float]) -> float:

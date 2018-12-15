@@ -47,6 +47,11 @@ class LossFuncAbstract:
 class DiffSquare(LossFuncAbstract):
     @staticmethod
     def func(guess: List[float], answer: List[float]) -> float:
+        #print("GUESS AND ANSWER %s %s" % (guess, answer))
+        #print(np.subtract(answer, guess))
+        #print(np.linalg.norm(np.subtract(answer, guess)) * np.linalg.norm(np.subtract(answer, guess)))
+        #print(np.linalg.norm(np.subtract(answer, guess)) ** 2)
+        #print("LOSS FUNCTION GAVE %s" % (np.linalg.norm(np.subtract(answer, guess))) ** 2)
         return (np.linalg.norm(np.subtract(answer, guess))) ** 2
 
     # ∂q/∂yLi L - last layer index, i - index of output neuron

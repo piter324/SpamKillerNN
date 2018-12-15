@@ -24,3 +24,15 @@ def generate_random_set1(data_size: int) -> TrainingSet:
         print(answers[d])
     print("###END OF GENERATING RANDOM SET1###")
     return TrainingSet(data, answers)
+
+def generate_guess_number() -> TrainingSet:
+    print("###GENERATING GUESS THE NUMBER TRIVIAL SET...###")
+    data: List[List[float]] = []
+    answers: List[List[float]] = []
+    random_number = random.random()
+    data.append([random_number])
+    answers.append([random_number])
+    print(data)
+    print(answers)
+    print("###END OF GENERATING GUESS THE NUMBER TRIVIAL SET...###")
+    return TrainingSet(data, answers)
