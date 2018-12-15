@@ -10,6 +10,7 @@ class TrainingSet:
         self.answers: List[List[float]] = answers.copy()
 
 
+# x > y gives true
 def generate_random_set1(data_size: int) -> TrainingSet:
     print("###GENERATING RANDOM SET1...###")
     data: List[List[float]] = []
@@ -20,10 +21,27 @@ def generate_random_set1(data_size: int) -> TrainingSet:
             answers.append([1])
         else:
             answers.append([-1])
-        print(data[d])
-        print(answers[d])
+        #print(data[d])
+        #print(answers[d])
     print("###END OF GENERATING RANDOM SET1###")
     return TrainingSet(data, answers)
+
+
+def generate_xor_set(data_size: int) -> TrainingSet:
+    print("###GENERATING XOR SET...###")
+    data: List[List[float]] = []
+    answers: List[List[float]] = []
+    for d in range(data_size):
+        data.append([random.randint(0, 1), random.randint(0, 1)])
+        if (data[d][0] == 1 and data[d][1] == 0) or (data[d][0] == 0 and data[d][1] == 1):
+            answers.append([1])
+        else:
+            answers.append([-1])
+        print(data[d])
+        print(answers[d])
+    print("###END OF GENERATING XOR SET###")
+    return TrainingSet(data, answers)
+
 
 def generate_guess_number() -> TrainingSet:
     print("###GENERATING GUESS THE NUMBER TRIVIAL SET...###")
@@ -32,7 +50,9 @@ def generate_guess_number() -> TrainingSet:
     random_number = random.random()
     data.append([random_number])
     answers.append([random_number])
-    print(data)
-    print(answers)
+    #print(data)
+    #print(answers)
     print("###END OF GENERATING GUESS THE NUMBER TRIVIAL SET...###")
     return TrainingSet(data, answers)
+
+

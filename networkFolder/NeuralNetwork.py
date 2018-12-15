@@ -99,6 +99,7 @@ class NeuralNetwork:
     def calc_gradientj(self, training_set: TrainingSet) -> List[List[List[float]]]:
         # gradient of J(w) function that we want to minimize
         gradient: List[List[List[float]]] = self.examine_single_pair(training_set.data[0], training_set.answers[0])
+        #print("GRADIENT: %s" % gradient)
         for pairP in range(1, len(training_set.data), 1):
             #print("GRADIENT: %s" % gradient)
             #time.sleep(1)
@@ -114,31 +115,34 @@ class NeuralNetwork:
         return gradient
 
     def train(self, training_set: TrainingSet, learning_rate: float, learning_target: float):
-        assert 0 < learning_target <= 1
+        assert 0 <= learning_target
         network_tester: NetworkTester = NetworkTester(self)
         test_result: Tuple[float, float] = network_tester.test(training_set)
-        start_loss = test_result[0]  # TODO for summary only
-        print("###STARTING TRAINING TO TRAINING...###\nBefore training:\nTarget function: %s\nCorrect ratio: %s\n" %
+        start_loss = test_result[0]
+        print("###STARTING TRAINING...###\nBefore training:\nTarget function: %s\nCorrect ratio: %s\n" %
               (test_result[0], test_result[1]))
 
         iteration: int = 0
-        while test_result[1] < learning_target and iteration < 2000:
+        while test_result[0] > learning_target and iteration < 1000:
             gradient: List[List[List[float]]] = self.calc_gradientj(training_set)
             #print(gradient)
             minus_beta_gradient = gradient.copy()
             #print(minus_beta_gradient)
             # multiply matrix by scalar
-            minus_beta_gradient = MatrixMath.mul_scalar3d(minus_beta_gradient, learning_rate)  # TODO why it works without minus xD
+            minus_beta_gradient = MatrixMath.mul_scalar3d(minus_beta_gradient, -learning_rate)
 
-            print("ITERATION %d minus_beta_gradient: %s" % (iteration, minus_beta_gradient))
+            #print("ITERATION %d minus_beta_gradient: %s" % (iteration, minus_beta_gradient))
             #time.sleep(1)
             self.adjust_weights(minus_beta_gradient)
-            test_result = network_tester.test(training_set)
+            new_result = network_tester.test(training_set)
+            if new_result[0] > test_result[0]:
+                print("#####Too big learning rate!#####")
+            test_result = new_result
             iteration = iteration + 1
-            print("After { %d } iterations:\nTarget function: %s\nCorrect ratio: %s"
-                  % (iteration, test_result[0], test_result[1]))
+            print("\nAfter { %d } iterations:\nTarget function: %s\n"
+                  % (iteration, test_result[0]))
         print("###END OF TRAINING###")
-        print("Trained from loss function %s to %s" % (start_loss, test_result[0]))
+        print("\nTrained from loss function %s to %s\n" % (start_loss, test_result[0]))
 
     def kfold_train(self):  # TODO
         pass
@@ -159,5 +163,5 @@ class NeuralNetwork:
             for neuronI in range(len(self.layers[layerK])):
                 iteration_result.append(self.layers[layerK][neuronI].process_input(result))
             result = iteration_result
-        print("Input %s gave result: %s" % (input_vector, result))
+        #print("Input %s gave result: %s" % (input_vector, result))
         return result

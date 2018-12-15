@@ -15,7 +15,7 @@ class BackPropMatrices:
                 dq_dykj_vector.append(None)
             self.dq_dykj_matrix.append(dq_dykj_vector)
 
-        # TODO might not be needed as well as assertion in ser_deriv
+        # TODO might not be needed as well as assertion in set_deriv
         # init afunc_derivs_matrix
         for layerK in range(len(neural_network.layers)):
             afunc_derivs_vector: List[None] = []

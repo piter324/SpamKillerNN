@@ -6,16 +6,17 @@ from NetworkTester import NetworkTester
 import time
 import numpy as np
 import inspect
+from random import randint as rnd
 
-a = [[[1,2,3],[3,2,1],[5,6,7]], [[3,2,1],[2,4,5]]]
-b = [[[3,2,1],[2,4,5],[3,3,3]], [[1,2,3],[3,2,1]]]
-print(np.add(a,b))
+#a = [[[1,2,3],[3,2,1],[5,6,7]], [[3,2,1],[2,4,5]]]
+#b = [[[3,2,1],[2,4,5],[3,3,3]], [[1,2,3],[3,2,1]]]
+#print(np.add(a,b))
 
 #print(inspect.isclass(Functions.FuncAbstract))
 #print(inspect.isclass(Functions.Sigmoid))
 #print(issubclass(Functions.Sigmoid, Functions.FuncAbstract))
 
-ts: TrainingSet = TrainingSet.generate_random_set1(2)
+#ts: TrainingSet = TrainingSet.generate_random_set1(2)
 
 #ne = Neuron.Neuron([1, 2, 3, 4], None)
 #ne2 = Neuron.Neuron([1, 2, 3, 4], Functions.Sigmoid)
@@ -56,7 +57,47 @@ time.sleep(1)
 #time.sleep(1)
 #guesser.train(number_set, 0.1, 0.8)
 
-ts4 = TrainingSet.generate_random_set1(20)
-nn4 = NeuralNetwork(2, [2, 1], [[0, 0, 0], [0, 0, 0]], [Functions.Sigmoid, None], Functions.DiffSquare)
-time.sleep(1)
-nn4.train(ts4, 0.3, 0.8)
+# mala siec
+
+#nn4 = NeuralNetwork(2, [2, 1], [[0, 0, 0], [0, 0, 0]], [Functions.Sigmoid, Functions.TanH], Functions.DiffSquare)
+
+#ts5 = TrainingSet.generate_random_set1(20)
+#tester = NetworkTester(nn4)
+#print(tester.test(ts5))
+#time.sleep(2)
+
+#ts4 = TrainingSet.generate_random_set1(200)
+#nn4.train(ts4, 0.6, 0.1)
+
+#print(tester.test(ts5))
+
+# XOR
+
+nn8 = NeuralNetwork(3, [2, 2, 1],
+                    [[rnd(-3,3), rnd(-3,3), rnd(-3,3)], [rnd(-3,3), rnd(-3,3), rnd(-3,3)], [rnd(-3,3), rnd(-3,3), rnd(-3,3)]],
+                    [Functions.Identity, Functions.TanH, Functions.TanH], Functions.DiffSquare)
+
+ts9 = TrainingSet.generate_xor_set(20)
+tester3 = NetworkTester(nn8)
+print(tester3.test(ts9))
+time.sleep(2)
+
+ts8 = TrainingSet.generate_xor_set(200)
+nn8.train(ts8, 0.5, 0.1)
+
+print(tester3.test(ts9))
+
+# wieksza siec
+
+#nn6 = NeuralNetwork(3, [2, 2, 1], [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+# [Functions.Identity, Functions.Sigmoid, Functions.TanH], Functions.DiffSquare)
+
+#ts7 = TrainingSet.generate_random_set1(20)
+#tester2 = NetworkTester(nn6)
+#print(tester2.test(ts7))
+#time.sleep(3)
+
+#ts6 = TrainingSet.generate_random_set1(200)
+#nn6.train(ts6, 1, 0.1)
+
+#print(tester2.test(ts7))

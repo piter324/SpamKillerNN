@@ -10,8 +10,7 @@ class NetworkTester:
 
     def calc_loss(self, guess: List[float], answer: List[float]) -> float:
         """Calculates loss with network's loss formula"""
-        print("Guess: %s" % guess)
-        print("Answer: %s" % answer)
+        #print("Guess: %s Answer: %s" % (guess, answer))
         return self.tested_network.loss_function.func(guess, answer)
 
     def test(self, training_set: TrainingSet) -> Tuple[float, float]:
