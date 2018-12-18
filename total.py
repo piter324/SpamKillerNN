@@ -4,6 +4,7 @@ from NeuralNetwork import NeuralNetwork
 from NetworkTester import NetworkTester
 import Functions
 from random import random
+import time
 
 if __name__ == '__main__':
     
@@ -25,20 +26,28 @@ if __name__ == '__main__':
             data_vec.append(0)
         data.append(data_vec)
     
-    print(csv_output[3:4])
-    print(data[3:4])
-    print(answers[3:4])
+    #print(csv_output[3:4])
+    #print(data[3:4])
+    #print(answers[3:4])
 
     weight_vector = []
     for i in range(31):
-        weight_vector.append(random()*10)
+        weight_vector.append(random())
+
+    print(weight_vector)
 
     weight_vector2 = []
-    for i in range(11):
-        weight_vector2.append(random()*10)
+    for i in range(51):
+        weight_vector2.append(random())
+    print(weight_vector2)
+    time.sleep(2)
 
-    training_set = TrainingSet(data[6:], answers[6:])
-    neural_network = NeuralNetwork(3, [10, 10, 1], [weight_vector, weight_vector2, weight_vector2], [Functions.Identity, Functions.Identity, Functions.Sigmoid], Functions.DiffSquare)
+    training_set = TrainingSet(data[6:600], answers[6:600])
+    print(len(data))
+    print(len(answers))
+    time.sleep(2)
+    neural_network = NeuralNetwork(3, [50, 3, 1], [weight_vector, weight_vector2, [0.5, -0.5, -1, 1]],
+                                   [Functions.Identity, Functions.Identity, Functions.TanH], Functions.DiffSquare)
     #neural_network.make_guess(training_set.data[0])
     neural_network.train(training_set, 0.1, 0.2)
 

@@ -123,7 +123,7 @@ class NeuralNetwork:
               (test_result[0], test_result[1]))
 
         iteration: int = 0
-        while test_result[0] > learning_target and iteration < 1000:
+        while test_result[0] > learning_target and iteration < 50:
             gradient: List[List[List[float]]] = self.calc_gradientj(training_set)
             #print(gradient)
             minus_beta_gradient = gradient.copy()
