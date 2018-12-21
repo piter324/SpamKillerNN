@@ -3,7 +3,7 @@ from TrainingSet import TrainingSet
 from typing import List, Tuple, Type
 import numpy as np
 
-
+# TODO napisać formule - coś w stylu wspolczynnika poprawnych ale dla procentowych odpowiedzi
 class NetworkTester:
     def __init__(self, neural_network):
         self.tested_network = neural_network
@@ -18,7 +18,7 @@ class NetworkTester:
         assert len(training_set.data[0]) == len(self.tested_network.layers[0][0].weights)-1
         assert len(training_set.answers[0]) == len(self.tested_network.layers[len(self.tested_network.layers)-1])
         print("###STARTING TEST...###")
-        # Target function (to minimize) J = (1/N) * Σ t=1 to N ||answer_t - guess_t||^2
+        # Target function (to minimize) J = (1/N) * Σ t=1 to N (loss_function)
         j_sum: float = 0
         correct_counter: int = 0
         for pair_index in range(len(training_set.data)):

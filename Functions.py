@@ -69,5 +69,4 @@ class DiffSquare(LossFuncAbstract):
     # ∂q/∂yLi L - last layer index, i - index of output neuron
     @staticmethod
     def derivative(guess: List[float], answer: List[float], index: int) -> float:
-        #return 2*(answer[index] - guess[index])  # TODO TUTAJ POWINNO BYC CHYBA NA ODWROT I TEMU TAM MINUS, patrz skrypt
-        return 2*(guess[index] - answer[index])  # TODO <-- tak chyba powinno byc, nie tak jak wyzej
+        return 2*(guess[index] - answer[index])

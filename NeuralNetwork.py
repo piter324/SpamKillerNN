@@ -8,7 +8,7 @@ from MatrixMath import MatrixMath
 import numpy as np
 import time
 
-
+# TODO random weights (if null for example) - maybe randomize all weights so they are not same in one layer
 class NeuralNetwork:
     def __init__(self, layers_amount: int, neurons_amount: List[int], weight_matrix: List[List[float]],
                  act_functions: List[Type[Functions.FuncAbstract]], loss_function: Type[Functions.LossFuncAbstract]):
@@ -26,9 +26,9 @@ class NeuralNetwork:
         for k in range(1, layers_amount):
             assert neurons_amount[k-1] == len(weight_matrix[k])-1,\
                 "Size of layer's (%d) output is (%d), but layer (%d) expects input of size (%d+1):" \
-                "\nneurons_amount[%d]: %d\nlen(weight_matrix[%d]): %d" %\
-                (k-1, neurons_amount[k-1], k, len(weight_matrix[k])-1,
-                 k-1, neurons_amount[k-1], k, len(weight_matrix[k]))
+                "\nneurons_amount[%d]: %d\nlen(weight_matrix[%d]): %d (should be %d)" %\
+                (k-1, neurons_amount[k-1], k, len(weight_matrix[k]),
+                 k-1, neurons_amount[k-1], k, len(weight_matrix[k]), neurons_amount[k-1]+1)
         # /\ /\Checking if parameters are legal./\ /\
         # Initializing variables.
         self.loss_function = loss_function
@@ -37,7 +37,7 @@ class NeuralNetwork:
             self.layers.append([])
             for neuronN in range(neurons_amount[layerK]):
                 self.layers[layerK].append(Neuron.Neuron(weight_matrix[layerK], act_functions[layerK]))
-        #for k in range(layers_amount):  # TODO do wywalenia
+        #for k in range(layers_amount):
             #print("LAYER %d" % k)
             #for n in range(neurons_amount[k]):
                 #print(self.layers[k][n].activationFunction)
@@ -123,7 +123,7 @@ class NeuralNetwork:
               (test_result[0], test_result[1]))
 
         iteration: int = 0
-        while test_result[0] > learning_target and iteration < 50:
+        while test_result[0] > learning_target:
             gradient: List[List[List[float]]] = self.calc_gradientj(training_set)
             #print(gradient)
             minus_beta_gradient = gradient.copy()
@@ -136,7 +136,7 @@ class NeuralNetwork:
             self.adjust_weights(minus_beta_gradient)
             new_result = network_tester.test(training_set)
             if new_result[0] > test_result[0]:
-                print("#####Too big learning rate!#####")
+                print("#####Too big learning rate!#####") # TODO this is often misleading, should change this
             test_result = new_result
             iteration = iteration + 1
             print("\nAfter { %d } iterations:\nTarget function: %s\n"
