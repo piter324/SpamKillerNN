@@ -52,7 +52,81 @@ def generate_guess_number() -> TrainingSet:
     answers.append([random_number])
     #print(data)
     #print(answers)
-    print("###END OF GENERATING GUESS THE NUMBER TRIVIAL SET...###")
+    print("###END OF GENERATING GUESS THE NUMBER TRIVIAL SET###")
+    return TrainingSet(data, answers)
+
+# TODO bad test
+def generate_rgb(data_size: int) -> TrainingSet:
+    print("###GENERATIN RGB SET...###")
+    data: List[List[float]] = []
+    answers: List[List[float]] = []
+    for c in range(data_size):
+        color = []
+        for s in range(3):
+            color.append(random.randint(-128, 127))
+        data.append(color)
+        if(color[0] > color[1] and color[0] > color[2]):
+            answers.append([1])
+        elif(color[1] > color[0] and color[1] > color[2]):
+            answers.append([0])
+        else:
+            answers.append([-1])
+    print("###END OF GENERATING RGB SET")
     return TrainingSet(data, answers)
 
 
+# TODO bad test
+def generate_rgb2(data_size: int) -> TrainingSet:
+        print("###GENERATIN RGB2 SET...###")
+        data: List[List[float]] = []
+        answers: List[List[float]] = []
+        for c in range(data_size):
+            color = []
+            for s in range(3):
+                color.append(random.randint(-128, 127))
+            data.append(color)
+            if (color[0] > color[1] and color[0] > color[2]):
+                answers.append([1])
+            elif (color[1] > color[0] and color[1] > color[2]):
+                answers.append([0.5])
+            else:
+                answers.append([0])
+        print("###END OF GENERATING RGB2 SET")
+        return TrainingSet(data, answers)
+
+
+def generate_rgb3(data_size: int) -> TrainingSet:
+    print("###GENERATING RGB2 SET...###")
+    data: List[List[float]] = []
+    answers: List[List[float]] = []
+    for c in range(data_size):
+        color = []
+        for s in range(3):
+            color.append(random.randint(-30, 30))
+        data.append(color)
+        if (color[0] > color[1] and color[0] > color[2]):
+            answers.append([1,0,0])
+        elif (color[1] > color[0] and color[1] > color[2]):
+            answers.append([0,1,0])
+        else:
+            answers.append([0,0,1])
+        print("%s\n%s" % (data[c], answers[c]))
+    print("###END OF GENERATING RGB2 SET")
+    return TrainingSet(data, answers)
+
+
+def generate_sum_set(data_size: int):
+    print("###GENERATING SUM SET..###")
+    data = []
+    answers = []
+    for d in range(data_size):
+        triad = []
+        for n in range(3):
+            triad.append(random.random()-0.5)
+        data.append(triad)
+        s = 0
+        for n in triad:
+            s += n
+        answers.append([s])
+    print("###END OF GENERATING SUM SET###")
+    return TrainingSet(data, answers)

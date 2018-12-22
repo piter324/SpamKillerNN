@@ -1,5 +1,6 @@
 from typing import List
 import numpy as np
+import math
 
 
 # TODO add other functions (ReLU, _/ , _/- )
@@ -36,8 +37,15 @@ class Identity(FuncAbstract):
 class TanH(FuncAbstract):
     @staticmethod
     def func(x: float) -> float:
+        # print("GOT x TO TANH: %d" % x)
         a = np.exp(x) - np.exp(-x)
+        if math.isnan(a):
+            print("GOT x %s but a is nan" % x)
         b = np.exp(x) + np.exp(-x)
+        if math.isnan(b):
+            print("GOT x %s but b is nan" % x)
+        if math.isnan(a/b):
+            print("GOT x %s but a/b is nan" % x)
         return a/b
 
     @staticmethod
@@ -56,6 +64,7 @@ class LossFuncAbstract:
         pass
 
 
+# TODO moze funkcja bardziej lejkowa
 class DiffSquare(LossFuncAbstract):
     @staticmethod
     def func(guess: List[float], answer: List[float]) -> float:

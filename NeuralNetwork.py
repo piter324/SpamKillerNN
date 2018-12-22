@@ -8,7 +8,8 @@ from MatrixMath import MatrixMath
 import numpy as np
 import time
 
-# TODO random weights (if null for example) - maybe randomize all weights so they are not same in one layer
+# TODO random weights (if given null or interval for example) - maybe randomize all weights so they are not same in one layer
+# TODO change all iterating loops to actually iterate instead of using indexes
 class NeuralNetwork:
     def __init__(self, layers_amount: int, neurons_amount: List[int], weight_matrix: List[List[float]],
                  act_functions: List[Type[Functions.FuncAbstract]], loss_function: Type[Functions.LossFuncAbstract]):
@@ -114,6 +115,8 @@ class NeuralNetwork:
         #print("GRADIENT 2 %s" % gradient)
         return gradient
 
+    # TODO maybe we want some more complex method (optionally)
+    # TODO momentum - adjust = calculated_adjust + past_adjust * momentum
     def train(self, training_set: TrainingSet, learning_rate: float, learning_target: float):
         assert 0 <= learning_target
         network_tester: NetworkTester = NetworkTester(self)
@@ -123,7 +126,7 @@ class NeuralNetwork:
               (test_result[0], test_result[1]))
 
         iteration: int = 0
-        while test_result[0] > learning_target:
+        while test_result[0] > learning_target and iteration < 20000:
             gradient: List[List[List[float]]] = self.calc_gradientj(training_set)
             #print(gradient)
             minus_beta_gradient = gradient.copy()
@@ -141,6 +144,13 @@ class NeuralNetwork:
             iteration = iteration + 1
             print("\nAfter { %d } iterations:\nTarget function: %s\n"
                   % (iteration, test_result[0]))
+
+            # TODO for debug
+            # print actual weights
+            # for k in range(len(self.layers)):
+            #     for n in range(len(self.layers[k])):
+            #         print(self.layers[k][n].weights)
+
         print("###END OF TRAINING###")
         print("\nTrained from loss function %s to %s\n" % (start_loss, test_result[0]))
 
