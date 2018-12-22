@@ -25,7 +25,7 @@ def save_bag_of_words(all_mails, bag_csv_filename, how_many):
     # print(bag)
     # print(most_common)
 
-def analyze_mails_for_most_common_words(most_common_csv_filename, all_mails, output_csv_filename):
+def analyze_mails_for_most_common_words(most_common_csv_filename, all_mails, clear_mail_vectors, output_csv_filename):
 
     with open(file=most_common_csv_filename, mode='r') as inputcsv:
         inputrdr = csv.reader(inputcsv)
@@ -33,8 +33,8 @@ def analyze_mails_for_most_common_words(most_common_csv_filename, all_mails, out
         for row in inputrdr:
             most_common.append(row[0])
         occurences = []
-        for words_arr in all_mails:
-            this_mail_occurences = []
+        for idx, words_arr in enumerate(all_mails):
+            this_mail_occurences = [clear_mail_vectors[idx][0]]
             for common in most_common:
                 this_mail_occurences.append(words_arr.count(common))
             occurences.append(this_mail_occurences)
@@ -55,4 +55,4 @@ if __name__ == "__main__":
     all_mails = combine_words_array(csv_arr)
 
     # save_bag_of_words(all_mails, "bag_of_words_test.csv", 2000)
-    analyze_mails_for_most_common_words(bagofwords, all_mails, outputcsv)
+    analyze_mails_for_most_common_words(bagofwords, all_mails, csv_arr, outputcsv)

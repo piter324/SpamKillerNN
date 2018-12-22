@@ -9,10 +9,10 @@ The structure:
 one word per line
 
 ## CSV with number of occurences
-A file "mails_with_word_occurences.csv" contains information about the number of occurences of each of the most common words in every e-mail message.
+A file "mails_with_word_occurences.csv" contains information about whether the message is SPAM or HAM and the number of occurences of each of the most common words in every e-mail message.
 
 The structure:
 
-`<occurences of the first word> <occurences of the second word> <occurences of the third word> ... <occurences of the 2000th word>`
+`<1 for SPAM, 0 for HAM> <occurences of the first word> <occurences of the second word> <occurences of the third word> ... <occurences of the 2000th word>`
 
 One line represents one message in the same order as in "csv_properUTF8.txt" file.
