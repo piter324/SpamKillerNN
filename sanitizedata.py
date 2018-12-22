@@ -1,8 +1,8 @@
 import csv
 import re
-from random import shuffle
 from nltk.corpus import stopwords
 import nltk.stem
+import pprint
 
 def get_csv_to_array(filename):
     csv_arr = []
@@ -50,9 +50,9 @@ def prepare_csv(filename):
         csv_arr[i][2] = sanitize(csv_arr[i][2])
         csv_arr[i][4] = sanitize(csv_arr[i][4])
         # print(csv_arr[i])
-    shuffle(csv_arr)
     return csv_arr
 
 if __name__ == '__main__':
-    csv_output = prepare_csv("csv01_properUTF8.txt")
-    print(csv_output[0:5])
+    csv_output = prepare_csv("csv01.csv")
+    pp = pprint.PrettyPrinter()
+    pp.pprint(csv_output[0:5])
