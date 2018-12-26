@@ -29,10 +29,10 @@ class BackPropMatrices:
             last_dq_dykj.append(self.neural_network.loss_function.derivative(guess, answer, neuronJ))
         self.dq_dykj_matrix.append(last_dq_dykj)
 
-    def set_deriv(self, layerk: int, neuroni: int, value: float):
-        assert self.afunc_derivs_matrix[layerk][neuroni] is None,\
-            "Tried to set derivative (%d, %d), but it was already set!" % (layerk, neuroni)
-        self.afunc_derivs_matrix[layerk][neuroni] = value
+    # def set_deriv(self, layerk: int, neuroni: int, value: float):
+    #     assert self.afunc_derivs_matrix[layerk][neuroni] is None,\
+    #         "Tried to set derivative (%d, %d), but it was already set!" % (layerk, neuroni)
+    #     self.afunc_derivs_matrix[layerk][neuroni] = value
 
     def get_dq_dykj(self, layerk: int, neuronj: int) -> float:
         if self.dq_dykj_matrix[layerk][neuronj] is None:

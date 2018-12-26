@@ -1,4 +1,4 @@
-from typing import List, Union, Type
+from typing import List, Union, Type, Tuple
 import numpy as np
 import Functions
 import inspect
@@ -18,14 +18,15 @@ class Neuron:
         else:
             self.activationFunction: Type[Functions.FuncAbstract] = activation_function
 
-    def process_input(self, input_vector: List[float]) -> float:
+    def process_input(self, input_vector: List[float]) -> Tuple[float, float]:
         """Makes neuron process given input."""
         # TODO do wywalenia bo siec bedzie to sprawdzac
         assert len(input_vector) == len(self.weights),\
             "neuron %s requires input of size %d, got %d" % (self, len(self.weights), len(input_vector))
         input_vector_copy: List[float] = input_vector.copy()
-        result: float = np.dot(input_vector_copy, self.weights)
-        return self.activationFunction.func(result)
+        summ: float = np.dot(input_vector_copy, self.weights)
+        result_tuple = (self.activationFunction.func(summ), summ)
+        return result_tuple
 
     def adjust_weights(self, adjust_vector: List[float]):
         self.weights = np.add(self.weights, adjust_vector)

@@ -5,6 +5,7 @@ from NetworkTester import NetworkTester
 import Functions
 from random import random
 import time
+import csv
 
 if __name__ == '__main__':
     
@@ -29,6 +30,58 @@ if __name__ == '__main__':
     #print(csv_output[3:4])
     #print(data[3:4])
     #print(answers[3:4])
+
+    # wczytanie maili
+    with open('mails_with_word_occurences.csv') as file:
+        reader = csv.reader(file, quoting=csv.QUOTE_NONNUMERIC)
+        mails = list(reader)
+
+    for m in range(len(mails)-10,len(mails)-1,1):
+        print("Mail %d" % m)
+        print(mails[m])
+        print(len(mails[m]))
+    # # /wczytanie maili
+    # # przygotowanie training set
+    data = []
+    answers = []
+    for m in mails:
+        one_data = m[1:501]
+        print(len(one_data))
+        one_answer = [m[0]]
+        print(type(one_answer[0]))
+        data.append(one_data)
+        answers.append(one_answer)
+
+    print(answers)
+    print(data[0])
+    print(data[1])
+    mails_set = TrainingSet.TrainingSet(data[2200:2800], answers[2200:2800])
+
+    # przygotowanie training set
+    # stworzenie wytrenowanie i test
+    w0 = []
+    for i in range(501):
+        w0.append(random()/50 - 0.01)
+
+    w1 = []
+    for i in range(51):
+        w1.append(random()/50 - 0.01)
+
+    w2 = []
+    for i in range(21):
+        w2.append(random()/50 - 0.01)
+
+    neural_network = NeuralNetwork(500, [50, 1], (-0.01, 0.01), [Functions.Sigmoid, Functions.Sigmoid],
+                                   Functions.DiffSquare)
+
+    # nn2 = NeuralNetwork(6, [3,4,2], (-0.1, 0.1), [Functions.Sigmoid, Functions.Sigmoid, Functions.Sigmoid], Functions.DiffSquare)
+    neural_network.train(mails_set,0.5,0.2)
+
+    print(mails[4])
+    print(neural_network.make_guess(data[4]))
+    print(mails[3600])
+    print(neural_network.make_guess(data[3600]))
+    # /stworzenie wytrenowanie i test
 
     # weight_vector = []
     # for i in range(31):
@@ -72,9 +125,9 @@ if __name__ == '__main__':
     #     print("--------")
 
     # XOR test again
-    #nn = NeuralNetwork(4, [3, 3, 4, 1], [weight_vector3, weight_vector4, [1,-2,2,1], w5],
-                       #[Functions.Identity, Functions.Identity, Functions.Identity, Functions.TanH], Functions.DiffSquare)
-
+    # nn = NeuralNetwork(4, [3, 3, 4, 1], [weight_vector3, weight_vector4, [1,-2,2,1], w5],
+    #                    [Functions.Identity, Functions.Identity, Functions.Identity, Functions.TanH], Functions.DiffSquare)
+    #
     # w1 = []
     # for w in range(3):
     #     w1.append(random()*4 - 2)
@@ -99,27 +152,27 @@ if __name__ == '__main__':
 
     # RGB test
 
-    w1 = []
-    for w in range(4):
-        w1.append(random()-0.5)
-
-    w2 = []
-    for w in range(4):
-        w2.append(random()-0.5)
-
-    w3 = []
-    for w in range(8):
-        w3.append(random()-0.5)
-    nn3 = NeuralNetwork(2, [3, 3], [w1,[-1,0,1,0.5]], [Functions.Sigmoid,
-                                                                   Functions.Sigmoid], Functions.DiffSquare)
-
-    ts2 = TrainingSet.generate_rgb3(200)
-
-    nn3.train(ts2, 0.2, 0.02)
-
-    print(nn3.make_guess([25,5,-12]))
-    print(nn3.make_guess([1,-16,23]))
-    print(nn3.make_guess([2,24,18]))
+    # w1 = []
+    # for w in range(4):
+    #     w1.append(random()-0.5)
+    #
+    # w2 = []
+    # for w in range(4):
+    #     w2.append(random()-0.5)
+    #
+    # w3 = []
+    # for w in range(8):
+    #     w3.append(random()-0.5)
+    # nn3 = NeuralNetwork(2, [3, 3], [w1,[-1,0,1,0.5]], [Functions.Sigmoid,
+    #                                                                Functions.Sigmoid], Functions.DiffSquare)
+    #
+    # ts2 = TrainingSet.generate_rgb3(200)
+    #
+    # nn3.train(ts2, 0.2, 0.04)
+    #
+    # print(nn3.make_guess([25,5,-12]))
+    # print(nn3.make_guess([1,-16,23]))
+    # print(nn3.make_guess([2,24,18]))
 
     #guess the number
 

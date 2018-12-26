@@ -7,42 +7,56 @@ from NetworkTester import NetworkTester
 from MatrixMath import MatrixMath
 import numpy as np
 import time
+from random import uniform
 
-# TODO random weights (if given null or interval for example) - maybe randomize all weights so they are not same in one layer
-# TODO change all iterating loops to actually iterate instead of using indexes
+
 class NeuralNetwork:
-    def __init__(self, layers_amount: int, neurons_amount: List[int], weight_matrix: List[List[float]],
-                 act_functions: List[Type[Functions.FuncAbstract]], loss_function: Type[Functions.LossFuncAbstract]):
+    # def __init__(self, layers_amount: int, neurons_amount: List[int], weight_matrix: List[List[float]],
+    #              act_functions: List[Type[Functions.FuncAbstract]], loss_function: Type[Functions.LossFuncAbstract]):
+
+    def __init__(self, input_size: int, neurons_amount: List[int], weight_interval: Tuple[float, float],
+                act_functions: List[Type[Functions.FuncAbstract]], loss_function: Type[Functions.LossFuncAbstract]):
         # \/ \/Checking if parameters are legal.\/ \/
-        assert layers_amount > 0, "layers_amount(%d) is not greater than 0" % layers_amount
-        assert len(neurons_amount) == layers_amount,\
-            "Size of neurons_amount list(%d) doesn't equal layers_amount(%d):\nneurons_amount: %s"\
-            % (len(neurons_amount), layers_amount, neurons_amount)
-        assert len(weight_matrix) == layers_amount,\
-            "Size of weight_matrix list(%d) doesn't equal layer_amount(%d):\nweight_matrix: %s"\
-            % (len(weight_matrix), layers_amount, weight_matrix)
-        assert len(act_functions) == layers_amount,\
+        # assert layers_amount > 0, "layers_amount(%d) is not greater than 0" % layers_amount
+        # assert len(neurons_amount) == layers_amount,\
+        #     "Size of neurons_amount list(%d) doesn't equal layers_amount(%d):\nneurons_amount: %s"\
+        #     % (len(neurons_amount), layers_amount, neurons_amount)
+        # assert len(weight_matrix) == layers_amount,\
+        #     "Size of weight_matrix list(%d) doesn't equal layer_amount(%d):\nweight_matrix: %s"\
+        #     % (len(weight_matrix), layers_amount, weight_matrix)
+        assert len(act_functions) == len(neurons_amount),\
             "Size of act_functions list(%d) doesn't equal layers_amount(%d):\nact_functions: %s"\
-            % (len(act_functions), layers_amount, act_functions)
-        for k in range(1, layers_amount):
-            assert neurons_amount[k-1] == len(weight_matrix[k])-1,\
-                "Size of layer's (%d) output is (%d), but layer (%d) expects input of size (%d+1):" \
-                "\nneurons_amount[%d]: %d\nlen(weight_matrix[%d]): %d (should be %d)" %\
-                (k-1, neurons_amount[k-1], k, len(weight_matrix[k]),
-                 k-1, neurons_amount[k-1], k, len(weight_matrix[k]), neurons_amount[k-1]+1)
+            % (len(act_functions), len(neurons_amount), act_functions)
+        # for k in range(1, layers_amount):
+        #     assert neurons_amount[k-1] == len(weight_matrix[k])-1,\
+        #         "Size of layer's (%d) output is (%d), but layer (%d) expects input of size (%d+1):" \
+        #         "\nneurons_amount[%d]: %d\nlen(weight_matrix[%d]): %d (should be %d)" %\
+        #         (k-1, neurons_amount[k-1], k, len(weight_matrix[k]),
+        #          k-1, neurons_amount[k-1], k, len(weight_matrix[k]), neurons_amount[k-1]+1)
         # /\ /\Checking if parameters are legal./\ /\
         # Initializing variables.
         self.loss_function = loss_function
         self.layers: List[List[Neuron.Neuron]] = []
-        for layerK in range(layers_amount):
+
+        self.layers.append([])
+        for neuronN in range(neurons_amount[0]):
+            weight_vector = []
+            for w in range(input_size+1):
+                weight_vector.append(uniform(weight_interval[0],weight_interval[1]))
+            self.layers[0].append(Neuron.Neuron(weight_vector, act_functions[0]))
+
+        for layerK in range(1,len(neurons_amount),1):
             self.layers.append([])
             for neuronN in range(neurons_amount[layerK]):
-                self.layers[layerK].append(Neuron.Neuron(weight_matrix[layerK], act_functions[layerK]))
-        #for k in range(layers_amount):
-            #print("LAYER %d" % k)
-            #for n in range(neurons_amount[k]):
-                #print(self.layers[k][n].activationFunction)
-                #print(self.layers[k][n].weights)
+                weight_vector = []
+                for w in range(neurons_amount[layerK-1]+1):
+                    weight_vector.append(uniform(weight_interval[0], weight_interval[1]))
+                self.layers[layerK].append(Neuron.Neuron(weight_vector, act_functions[layerK]))
+        for k in range(len(neurons_amount)):
+            print("LAYER %d" % k)
+            for n in range(neurons_amount[k]):
+                print(self.layers[k][n].activationFunction)
+                print(self.layers[k][n].weights)
 
     # \/\/ TRAINING STUFF \/\/
     def adjust_weights(self, adjust_matrix: List[List[List[float]]]):
@@ -69,11 +83,10 @@ class NeuralNetwork:
             back_prop_matrices.y.append(result.copy())
             iteration_result: List[float] = []
             for neuronI in range(len(self.layers[layerK])):
-                neuron_output: float = self.layers[layerK][neuronI].process_input(result)
-                iteration_result.append(neuron_output)
-                # TODO \/\/ probably can put this directly into matrix
-                back_prop_matrices.set_deriv(layerK, neuronI,
-                                             self.layers[layerK][neuronI].activationFunction.derivative(neuron_output))
+                neuron_output: Tuple[float, float] = self.layers[layerK][neuronI].process_input(result)
+                iteration_result.append(neuron_output[0])
+                back_prop_matrices.afunc_derivs_matrix[layerK][neuronI] =\
+                    self.layers[layerK][neuronI].activationFunction.derivative(neuron_output[1])
             result = iteration_result
         back_prop_matrices.y.append(result.copy())
         #print("Input %s gave result: %s" % (input_data, result))
@@ -171,7 +184,7 @@ class NeuralNetwork:
             result.append(1)
             iteration_result: List[float] = []
             for neuronI in range(len(self.layers[layerK])):
-                iteration_result.append(self.layers[layerK][neuronI].process_input(result))
+                iteration_result.append(self.layers[layerK][neuronI].process_input(result)[0])
             result = iteration_result
         #print("Input %s gave result: %s" % (input_vector, result))
         return result
