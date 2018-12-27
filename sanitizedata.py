@@ -24,8 +24,10 @@ def sanitize(text):
     text_arr = remove_stopwords(text_arr)
     text_arr = do_stemming(text_arr)
     text_arr2 = []
+    weird_word_pattern = re.compile(r'([0-9][a-z])|([a-z][0-9])')
     for word in text_arr:
-        if(len(word) > 1): text_arr2.append(word)
+        # print(word, weird_word_pattern.match(word))
+        if len(word) > 1 and (not weird_word_pattern.match(word)) : text_arr2.append(word)
     return text_arr2
 
 def remove_stopwords(text_arr):

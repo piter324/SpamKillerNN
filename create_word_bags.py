@@ -54,5 +54,5 @@ if __name__ == "__main__":
     csv_arr = sd.prepare_csv(csvinput)
     all_mails = combine_words_array(csv_arr)
 
-    # save_bag_of_words(all_mails, "bag_of_words_test.csv", 2000)
+    # save_bag_of_words(all_mails, bagofwords, 2000)
     analyze_mails_for_most_common_words(bagofwords, all_mails, csv_arr, outputcsv)
