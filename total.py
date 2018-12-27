@@ -55,7 +55,7 @@ if __name__ == '__main__':
     print(answers)
     print(data[0])
     print(data[1])
-    mails_set = TrainingSet.TrainingSet(data[2200:2800], answers[2200:2800])
+    mails_set = TrainingSet.TrainingSet(data[2000:3000], answers[2000:3000])
 
     # przygotowanie training set
     # stworzenie wytrenowanie i test
@@ -75,7 +75,7 @@ if __name__ == '__main__':
                                    Functions.DiffSquare)
 
     # nn2 = NeuralNetwork(6, [3,4,2], (-0.1, 0.1), [Functions.Sigmoid, Functions.Sigmoid, Functions.Sigmoid], Functions.DiffSquare)
-    neural_network.train(mails_set,0.5,0.2)
+    neural_network.train(mails_set,1,0.005)
 
     print(mails[4])
     print(neural_network.make_guess(data[4]))
