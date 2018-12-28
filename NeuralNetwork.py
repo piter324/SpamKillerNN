@@ -180,6 +180,7 @@ class NeuralNetwork:
               (test_result[0], validation_result[0]))
 
         iteration: int = 0
+        overfit_rating: float = 0
         while iteration < iterations_limit:
             gradient: List[List[List[float]]] = self.calc_gradientj(training_set)
             #print(gradient)
@@ -192,18 +193,23 @@ class NeuralNetwork:
             #time.sleep(1)
             self.adjust_weights(minus_beta_gradient)
             new_result = network_tester.test(training_set)
-            new_validation = network_tester.test(validation_set)
-            if(iteration > iterations_limit/2 and new_validation[0] > validation_result[0]):
-                print("### OVERFITTING! ###")
+            new_validation_result = network_tester.test(validation_set)
+            if(iteration > iterations_limit/2):
+                if new_validation_result[0] > validation_result[0]:
+                    print("### OVERFITTING! ###")
+                    overfit_rating += 1
+                elif overfit_rating > 0:
+                    overfit_rating -= 0.25
+            if overfit_rating >= 4:
                 test_result = new_result
-                validation_result = new_validation
+                validation_result = new_validation_result
                 break
             if new_result[0] > test_result[0]:
-                print("#####Too big learning rate!#####") # TODO this is often misleading, should change this
+                print("###Target function diverges (maybe too big learning rate)###")
             test_result = new_result
-            validation_result = new_validation
+            validation_result = new_validation_result
             iteration = iteration + 1
-            print("\nAfter { %d } iterations:\nTarget function: %s\nValidation target function: %s"
+            print("\nAfter { %d } iterations:\nTraining target function: %s\nValidation target function: %s"
                   % (iteration, test_result[0], validation_result[0]))
 
             # TODO for debug

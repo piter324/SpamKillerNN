@@ -108,7 +108,7 @@ def generate_guess_number() -> TrainingSet:
 
 
 def generate_rgb3(data_size: int) -> TrainingSet:
-    print("###GENERATING RGB2 SET...###")
+    print("###GENERATING RGB3 SET...###")
     data: List[List[float]] = []
     answers: List[List[float]] = []
     for c in range(data_size):
@@ -123,7 +123,7 @@ def generate_rgb3(data_size: int) -> TrainingSet:
         else:
             answers.append([0,0,1])
         print("%s\n%s" % (data[c], answers[c]))
-    print("###END OF GENERATING RGB2 SET")
+    print("###END OF GENERATING RGB3 SET")
     return TrainingSet(data, answers)
 
 

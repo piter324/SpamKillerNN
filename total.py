@@ -212,11 +212,15 @@ if __name__ == '__main__':
     # KFOLD TEST
     # RGB
 
-    ts = TrainingSet.generate_rgb3(200)
+    ts = TrainingSet.generate_rgb3(400)
 
     kfold_object = Kfold(5, ts)
-    kfold_object.initNetworks(3, [3, 3], (-2, 2), [Functions.Sigmoid, Functions.Sigmoid], Functions.DiffSquare)
+    kfold_object.initNetworks(3, [6, 3, 3], (-2, 2), [Functions.Sigmoid, Functions.Sigmoid, Functions.Sigmoid], Functions.DiffSquare)
 
-    best_network = kfold_object.proceedKfold(0.5, 500)
+    best_network = kfold_object.proceedKfold(0.5, 1000)
 
     print(best_network.make_guess([10,25,-4]))
+
+    ts_test = TrainingSet.generate_rgb3(100)
+    tester = NetworkTester(best_network)
+    print(tester.test(ts_test)[0])

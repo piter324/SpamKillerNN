@@ -23,7 +23,7 @@ class Kfold:
             return None
         results: List[float] = []
         for n in range(self.k):
-            print("Starting kfold { %d } iteration:" % n)
+            print("### Starting kfold { %d } iteration ###" % n)
             split_ts = self.bigSet.split(int(n*(len(self.bigSet.data)/self.k)), int((n+1)*(len(self.bigSet.data)/self.k)))
             results.append(self.nnList[n].vTrain(split_ts[0], learning_rate, iterations_limit, split_ts[1]))
             #input("Press Enter to continue")
