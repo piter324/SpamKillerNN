@@ -7,6 +7,7 @@ from random import random
 import time
 import csv
 from Kfold import Kfold
+from random import shuffle
 
 if __name__ == '__main__':
     
@@ -212,15 +213,63 @@ if __name__ == '__main__':
     # KFOLD TEST
     # RGB
 
-    ts = TrainingSet.generate_rgb3(400)
+    # ts = TrainingSet.generate_rgb3(400)
+    #
+    # kfold_object = Kfold(5, ts)
+    # kfold_object.initNetworks(3, [6, 3, 3], (-2, 2), [Functions.Sigmoid, Functions.Sigmoid, Functions.Sigmoid], Functions.DiffSquare)
+    #
+    # best_network = kfold_object.proceedKfold(0.5, 1000)
+    #
+    # print(best_network.make_guess([10,25,-4]))
+    #
+    # ts_test = TrainingSet.generate_rgb3(100)
+    # tester = NetworkTester(best_network)
+    # print(tester.test(ts_test)[0])
 
-    kfold_object = Kfold(5, ts)
-    kfold_object.initNetworks(3, [6, 3, 3], (-2, 2), [Functions.Sigmoid, Functions.Sigmoid, Functions.Sigmoid], Functions.DiffSquare)
+    # MAILS SHUFFLED
 
-    best_network = kfold_object.proceedKfold(0.5, 1000)
+    #wczytanie maili
+    with open('mails_with_word_occurences.csv') as file:
+        reader = csv.reader(file, quoting=csv.QUOTE_NONNUMERIC)
+        mails = list(reader)
 
-    print(best_network.make_guess([10,25,-4]))
+    shuffle(mails)
 
-    ts_test = TrainingSet.generate_rgb3(100)
-    tester = NetworkTester(best_network)
-    print(tester.test(ts_test)[0])
+    for m in range(len(mails)-10, len(mails)-1, 1):
+        print("Mail %d" % m)
+        print(mails[m])
+        print(len(mails[m]))
+    # /wczytanie maili
+    # przygotowanie training set
+    data = []
+    answers = []
+    for m in mails:
+        one_data = m[1:501]
+        print(len(one_data))
+        one_answer = [m[0]]
+        print(type(one_answer[0]))
+        data.append(one_data)
+        answers.append(one_answer)
+
+    print(answers)
+    print(data[0])
+    print(data[1])
+    mails_set = TrainingSet.TrainingSet(data[2000:3000], answers[2000:3000])
+    test_set = TrainingSet.TrainingSet(data[1000:2000], answers[1000:2000])
+
+    # /przygotowanie training set
+    #stworzenie wytrenowanie i test
+    # neural_network = NeuralNetwork(500, [20, 1], (-0.01, 0.01), [Functions.Sigmoid, Functions.Sigmoid],
+    #                            Functions.DiffSquare)
+
+    # nn2 = NeuralNetwork(6, [3,4,2], (-0.1, 0.1), [Functions.Sigmoid, Functions.Sigmoid, Functions.Sigmoid], Functions.DiffSquare)
+    # neural_network.train(mails_set,1,0.005)
+
+    kfold = Kfold(4, mails_set)
+    kfold.initNetworks(500, [20,1], (-0.01, 0.01), [Functions.Sigmoid, Functions.Sigmoid],
+                               Functions.DiffSquare)
+    best_network = kfold.proceedKfold(1, 10)
+
+    network_tester = NetworkTester(best_network)
+    print(network_tester.test(test_set)[0])
+    #/stworzenie wytrenowanie i test
