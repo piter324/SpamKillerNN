@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple, Type
 import random
 
 
@@ -8,6 +8,18 @@ class TrainingSet:
             "Size of data list(%d) doesn't equal size of correct_answers list(%d)." % (len(data), len(answers))
         self.data: List[List[float]] = data.copy()
         self.answers: List[List[float]] = answers.copy()
+
+    def split(self, start: int, end: int):
+        data1 = self.data[:start]
+        for d in self.data[end:]:
+            data1.append(d.copy())
+        answers1 = self.answers[:start]
+        for a in self.answers[end:]:
+            answers1.append(a.copy())
+        data2 = self.data[start:end]
+        answers2 = self.answers[start:end]
+
+        return [TrainingSet(data1, answers1), TrainingSet(data2, answers2)]
 
 
 # x > y gives true
@@ -56,43 +68,43 @@ def generate_guess_number() -> TrainingSet:
     return TrainingSet(data, answers)
 
 # TODO bad test
-def generate_rgb(data_size: int) -> TrainingSet:
-    print("###GENERATIN RGB SET...###")
-    data: List[List[float]] = []
-    answers: List[List[float]] = []
-    for c in range(data_size):
-        color = []
-        for s in range(3):
-            color.append(random.randint(-128, 127))
-        data.append(color)
-        if(color[0] > color[1] and color[0] > color[2]):
-            answers.append([1])
-        elif(color[1] > color[0] and color[1] > color[2]):
-            answers.append([0])
-        else:
-            answers.append([-1])
-    print("###END OF GENERATING RGB SET")
-    return TrainingSet(data, answers)
+# def generate_rgb(data_size: int) -> TrainingSet:
+#     print("###GENERATIN RGB SET...###")
+#     data: List[List[float]] = []
+#     answers: List[List[float]] = []
+#     for c in range(data_size):
+#         color = []
+#         for s in range(3):
+#             color.append(random.randint(-128, 127))
+#         data.append(color)
+#         if(color[0] > color[1] and color[0] > color[2]):
+#             answers.append([1])
+#         elif(color[1] > color[0] and color[1] > color[2]):
+#             answers.append([0])
+#         else:
+#             answers.append([-1])
+#     print("###END OF GENERATING RGB SET")
+#     return TrainingSet(data, answers)
 
 
 # TODO bad test
-def generate_rgb2(data_size: int) -> TrainingSet:
-        print("###GENERATIN RGB2 SET...###")
-        data: List[List[float]] = []
-        answers: List[List[float]] = []
-        for c in range(data_size):
-            color = []
-            for s in range(3):
-                color.append(random.randint(-128, 127))
-            data.append(color)
-            if (color[0] > color[1] and color[0] > color[2]):
-                answers.append([1])
-            elif (color[1] > color[0] and color[1] > color[2]):
-                answers.append([0.5])
-            else:
-                answers.append([0])
-        print("###END OF GENERATING RGB2 SET")
-        return TrainingSet(data, answers)
+# def generate_rgb2(data_size: int) -> TrainingSet:
+#         print("###GENERATIN RGB2 SET...###")
+#         data: List[List[float]] = []
+#         answers: List[List[float]] = []
+#         for c in range(data_size):
+#             color = []
+#             for s in range(3):
+#                 color.append(random.randint(-128, 127))
+#             data.append(color)
+#             if (color[0] > color[1] and color[0] > color[2]):
+#                 answers.append([1])
+#             elif (color[1] > color[0] and color[1] > color[2]):
+#                 answers.append([0.5])
+#             else:
+#                 answers.append([0])
+#         print("###END OF GENERATING RGB2 SET")
+#         return TrainingSet(data, answers)
 
 
 def generate_rgb3(data_size: int) -> TrainingSet:

@@ -13,11 +13,12 @@ class NetworkTester:
         #print("Guess: %s Answer: %s" % (guess, answer))
         return self.tested_network.loss_function.func(guess, answer)
 
+    # TODO usunac correct ratio
     def test(self, training_set: TrainingSet) -> Tuple[float, float]:
         # Checking if training_set is legal for neural_network
         assert len(training_set.data[0]) == len(self.tested_network.layers[0][0].weights)-1
         assert len(training_set.answers[0]) == len(self.tested_network.layers[len(self.tested_network.layers)-1])
-        print("###STARTING TEST...###")
+        #print("###STARTING TEST...###")
         # Target function (to minimize) J = (1/N) * Σ t=1 to N (loss_function)
         j_sum: float = 0
         correct_counter: int = 0
@@ -29,5 +30,5 @@ class NetworkTester:
                 correct_counter += 1
             j_sum += loss
         result_tuple: Tuple = (j_sum/len(training_set.data), correct_counter/len(training_set.data))
-        print("###END OF TEST###")
+        #print("###END OF TEST###")
         return result_tuple

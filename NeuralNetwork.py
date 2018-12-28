@@ -17,6 +17,7 @@ class NeuralNetwork:
     def __init__(self, input_size: int, neurons_amount: List[int], weight_interval: Tuple[float, float],
                 act_functions: List[Type[Functions.FuncAbstract]], loss_function: Type[Functions.LossFuncAbstract]):
         # \/ \/Checking if parameters are legal.\/ \/
+        assert weight_interval[0] < weight_interval[1]
         # assert layers_amount > 0, "layers_amount(%d) is not greater than 0" % layers_amount
         # assert len(neurons_amount) == layers_amount,\
         #     "Size of neurons_amount list(%d) doesn't equal layers_amount(%d):\nneurons_amount: %s"\
@@ -52,11 +53,11 @@ class NeuralNetwork:
                 for w in range(neurons_amount[layerK-1]+1):
                     weight_vector.append(uniform(weight_interval[0], weight_interval[1]))
                 self.layers[layerK].append(Neuron.Neuron(weight_vector, act_functions[layerK]))
-        for k in range(len(neurons_amount)):
-            print("LAYER %d" % k)
-            for n in range(neurons_amount[k]):
-                print(self.layers[k][n].activationFunction)
-                print(self.layers[k][n].weights)
+        # for k in range(len(neurons_amount)):
+        #     print("LAYER %d" % k)
+        #     for n in range(neurons_amount[k]):
+        #         print(self.layers[k][n].activationFunction)
+        #         print(self.layers[k][n].weights)
 
     # \/\/ TRAINING STUFF \/\/
     def adjust_weights(self, adjust_matrix: List[List[List[float]]]):
@@ -132,6 +133,7 @@ class NeuralNetwork:
     # TODO momentum - adjust = calculated_adjust + past_adjust * momentum
     def train(self, training_set: TrainingSet, learning_rate: float, learning_target: float):
         assert 0 <= learning_target
+        assert learning_rate > 0
         network_tester: NetworkTester = NetworkTester(self)
         test_result: Tuple[float, float] = network_tester.test(training_set)
         start_loss = test_result[0]
@@ -155,7 +157,7 @@ class NeuralNetwork:
                 print("#####Too big learning rate!#####") # TODO this is often misleading, should change this
             test_result = new_result
             iteration = iteration + 1
-            print("\nAfter { %d } iterations:\nTarget function: %s\n"
+            print("\nAfter { %d } iterations:\nTarget function: %s"
                   % (iteration, test_result[0]))
 
             # TODO for debug
@@ -167,8 +169,55 @@ class NeuralNetwork:
         print("###END OF TRAINING###")
         print("\nTrained from loss function %s to %s\n" % (start_loss, test_result[0]))
 
-    def kfold_train(self):  # TODO
-        pass
+    def vTrain(self, training_set: TrainingSet, learning_rate: float,
+               iterations_limit: int, validation_set: TrainingSet) -> float:
+        assert learning_rate > 0
+        network_tester: NetworkTester = NetworkTester(self)
+        test_result: Tuple[float, float] = network_tester.test(training_set)
+        validation_result: Tuple[float, float] = network_tester.test(validation_set)
+        start_loss = test_result[0]
+        print("###STARTING TRAINING...###\nBefore training:\nTarget function: %s\nValidation target function: %s" %
+              (test_result[0], validation_result[0]))
+
+        iteration: int = 0
+        while iteration < iterations_limit:
+            gradient: List[List[List[float]]] = self.calc_gradientj(training_set)
+            #print(gradient)
+            minus_beta_gradient = gradient.copy()
+            #print(minus_beta_gradient)
+            # multiply matrix by scalar
+            minus_beta_gradient = MatrixMath.mul_scalar3d(minus_beta_gradient, -learning_rate)
+
+            #print("ITERATION %d minus_beta_gradient: %s" % (iteration, minus_beta_gradient))
+            #time.sleep(1)
+            self.adjust_weights(minus_beta_gradient)
+            new_result = network_tester.test(training_set)
+            new_validation = network_tester.test(validation_set)
+            if(iteration > iterations_limit/2 and new_validation[0] > validation_result[0]):
+                print("### OVERFITTING! ###")
+                test_result = new_result
+                validation_result = new_validation
+                break
+            if new_result[0] > test_result[0]:
+                print("#####Too big learning rate!#####") # TODO this is often misleading, should change this
+            test_result = new_result
+            validation_result = new_validation
+            iteration = iteration + 1
+            print("\nAfter { %d } iterations:\nTarget function: %s\nValidation target function: %s"
+                  % (iteration, test_result[0], validation_result[0]))
+
+            # TODO for debug
+            # print actual weights
+            # for k in range(len(self.layers)):
+            #     for n in range(len(self.layers[k])):
+            #         print(self.layers[k][n].weights)
+
+        print("###END OF TRAINING###")
+        print("\nTrained from loss function %s to %s\n" % (start_loss, test_result[0]))
+        return validation_result[0]
+
+    # def kfold_train(self):  # TODO
+    #     pass
     # /\/\ TRAINING STUFF /\/\
 
     def make_guess(self, input_vector: List[float]) -> List[float]:
@@ -188,3 +237,17 @@ class NeuralNetwork:
             result = iteration_result
         #print("Input %s gave result: %s" % (input_vector, result))
         return result
+
+    # def get_weights(self) -> List[List[List[float]]]:
+    #     weight_matrix: List[List[List[float]]] = []
+    #     for layerK in self.layers:
+    #         layer_matrix: List[List[float]] = []
+    #         for neuronI in layerK:
+    #             layer_matrix.append(neuronI.weights.copy())
+    #         weight_matrix.append(layer_matrix)
+    #     return weight_matrix
+    #
+    # def set_weights(self, weight_matrix: List[List[List[float]]]):
+    #     for layerK in range(len(self.layers)):
+    #         for neuronI in range(len(self.layers[layerK])):
+    #             self.layers[layerK][neuronI].weights = weight_matrix[layerK][neuronI].copy()
