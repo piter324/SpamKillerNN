@@ -8,6 +8,8 @@ import time
 import csv
 from Kfold import Kfold
 from random import shuffle
+import copy
+import pickle
 
 if __name__ == '__main__':
     
@@ -229,33 +231,33 @@ if __name__ == '__main__':
     # MAILS SHUFFLED
 
     #wczytanie maili
-    with open('mails_with_word_occurences.csv') as file:
-        reader = csv.reader(file, quoting=csv.QUOTE_NONNUMERIC)
-        mails = list(reader)
-
-    shuffle(mails)
-
-    for m in range(len(mails)-10, len(mails)-1, 1):
-        print("Mail %d" % m)
-        print(mails[m])
-        print(len(mails[m]))
-    # /wczytanie maili
-    # przygotowanie training set
-    data = []
-    answers = []
-    for m in mails:
-        one_data = m[1:501]
-        print(len(one_data))
-        one_answer = [m[0]]
-        print(type(one_answer[0]))
-        data.append(one_data)
-        answers.append(one_answer)
-
-    print(answers)
-    print(data[0])
-    print(data[1])
-    mails_set = TrainingSet.TrainingSet(data[2000:3000], answers[2000:3000])
-    test_set = TrainingSet.TrainingSet(data[1000:2000], answers[1000:2000])
+    # with open('mails_with_word_occurences.csv') as file:
+    #     reader = csv.reader(file, quoting=csv.QUOTE_NONNUMERIC)
+    #     mails = list(reader)
+    #
+    # shuffle(mails)
+    #
+    # for m in range(len(mails)-10, len(mails)-1, 1):
+    #     print("Mail %d" % m)
+    #     print(mails[m])
+    #     print(len(mails[m]))
+    # # /wczytanie maili
+    # # przygotowanie training set
+    # data = []
+    # answers = []
+    # for m in mails:
+    #     one_data = m[1:501]
+    #     print(len(one_data))
+    #     one_answer = [m[0]]
+    #     print(type(one_answer[0]))
+    #     data.append(one_data)
+    #     answers.append(one_answer)
+    #
+    # print(answers)
+    # print(data[0])
+    # print(data[1])
+    # mails_set = TrainingSet.TrainingSet(data[2000:3000], answers[2000:3000])
+    # test_set = TrainingSet.TrainingSet(data[1000:2000], answers[1000:2000])
 
     # /przygotowanie training set
     #stworzenie wytrenowanie i test
@@ -265,11 +267,56 @@ if __name__ == '__main__':
     # nn2 = NeuralNetwork(6, [3,4,2], (-0.1, 0.1), [Functions.Sigmoid, Functions.Sigmoid, Functions.Sigmoid], Functions.DiffSquare)
     # neural_network.train(mails_set,1,0.005)
 
-    kfold = Kfold(4, mails_set)
-    kfold.initNetworks(500, [20,1], (-0.01, 0.01), [Functions.Sigmoid, Functions.Sigmoid],
-                               Functions.DiffSquare)
-    best_network = kfold.proceedKfold(1, 10)
-
-    network_tester = NetworkTester(best_network)
-    print(network_tester.test(test_set)[0])
+    # kfold = Kfold(4, mails_set)
+    # kfold.initNetworks(500, [40,1], (-0.01, 0.01), [Functions.Sigmoid, Functions.Sigmoid],
+    #                            Functions.DiffSquare)
+    # best_network = kfold.proceedKfold(1, 20)
+    #
+    # network_tester = NetworkTester(best_network)
+    # print(network_tester.test(test_set)[0])
     #/stworzenie wytrenowanie i test
+
+    # test deepcopy sieci
+
+    # network1 = NeuralNetwork(2, [2,2], (-1,1), [Functions.Sigmoid, Functions.Sigmoid], Functions.DiffSquare)
+    # network2 = copy.deepcopy(network1)
+    # print(network1.make_guess([1,3]))
+    # print(network2.make_guess([1,3]))
+    # network1.set_weights([[[1,1,3],[1,-5,1]],[[0,1,3],[2,1,0]]])
+    # print(network1.make_guess([1,3]))
+    # print(network2.make_guess([1,3]))
+    # print(network1.get_weights())
+
+    # pickle zapisywanie do pliku
+
+    # with open('network1.pkl', 'wb') as output:
+    #     pickle.dump(network1, output, pickle.HIGHEST_PROTOCOL)
+
+    # with open('network1.pkl', 'rb') as input:
+    #     network1: NeuralNetwork = pickle.load(input)
+    #
+    # print(network1.make_guess([1,3]))
+
+    # network: NeuralNetwork = NeuralNetwork.load('network1.pkl')
+    #
+    # print(network.make_guess([1,3]))
+
+    # zapisywanie postepu kfold
+
+    # set = TrainingSet.generate_xor_set(200)
+    # kfold = Kfold(4, set, "kfold1")
+    # kfold.initBaseNetwork(2, [4,2,1], (-1,1), [Functions.TanH, Functions.TanH, Functions.TanH], Functions.DiffSquare)
+    # kfold.proceedKfold(0.1,1000)
+
+    # kfold: Kfold = Kfold.load("kfold1.pkl")
+    # kfold.proceedKfold(0.1,1000)
+
+    # trained_network:NeuralNetwork = kfold.continueKfold()
+    #
+    # trained_network.save("xorNetwork")
+
+    xorNet: NeuralNetwork = NeuralNetwork.load("xorNetwork")
+    print(xorNet.make_guess([1,1]))
+    print(xorNet.make_guess([0, 0]))
+    print(xorNet.make_guess([0, 1]))
+    print(xorNet.make_guess([1, 0]))

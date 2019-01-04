@@ -1,4 +1,4 @@
-from typing import List, Type, Tuple
+from typing import List, Type, Tuple, Union
 import Functions
 import Neuron
 from BackPropMatrices import BackPropMatrices
@@ -8,6 +8,7 @@ from MatrixMath import MatrixMath
 import numpy as np
 import time
 from random import uniform
+import pickle
 
 
 class NeuralNetwork:
@@ -169,6 +170,7 @@ class NeuralNetwork:
         print("###END OF TRAINING###")
         print("\nTrained from loss function %s to %s\n" % (start_loss, test_result[0]))
 
+    # TODO niech zwraca jeszcze statystyke
     def vTrain(self, training_set: TrainingSet, learning_rate: float,
                iterations_limit: int, validation_set: TrainingSet) -> float:
         assert learning_rate > 0
@@ -244,16 +246,27 @@ class NeuralNetwork:
         #print("Input %s gave result: %s" % (input_vector, result))
         return result
 
-    # def get_weights(self) -> List[List[List[float]]]:
-    #     weight_matrix: List[List[List[float]]] = []
-    #     for layerK in self.layers:
-    #         layer_matrix: List[List[float]] = []
-    #         for neuronI in layerK:
-    #             layer_matrix.append(neuronI.weights.copy())
-    #         weight_matrix.append(layer_matrix)
-    #     return weight_matrix
-    #
-    # def set_weights(self, weight_matrix: List[List[List[float]]]):
-    #     for layerK in range(len(self.layers)):
-    #         for neuronI in range(len(self.layers[layerK])):
-    #             self.layers[layerK][neuronI].weights = weight_matrix[layerK][neuronI].copy()
+    def get_weights(self) -> List[List[List[float]]]:
+        weight_matrix: List[List[List[float]]] = []
+        for layerK in self.layers:
+            layer_matrix: List[List[float]] = []
+            for neuronI in layerK:
+                layer_matrix.append(neuronI.weights.copy())
+            weight_matrix.append(layer_matrix)
+        return weight_matrix
+
+    def set_weights(self, weight_matrix: List[List[List[float]]]):
+        for layerK in range(len(self.layers)):
+            for neuronI in range(len(self.layers[layerK])):
+                self.layers[layerK][neuronI].weights = weight_matrix[layerK][neuronI].copy()
+
+    def save(self, file_name: Union[str, None]):
+        if(file_name is None):
+            file_name = "network" + str(id(self)) + ".pkl"
+        with open(file_name, 'wb') as output:
+            pickle.dump(self, output, pickle.HIGHEST_PROTOCOL)
+
+    @staticmethod
+    def load(file_name: str):
+        with open(file_name, 'rb') as input:
+            return pickle.load(input)
