@@ -26,7 +26,7 @@ if __name__ == '__main__':
     data = []
     answers = []
     for m in mails:
-        one_data = m[1:501]
+        one_data = m[1:1001]
         # print(len(one_data))
         one_answer = [m[0]]
         # print(type(one_answer[0]))
@@ -36,26 +36,26 @@ if __name__ == '__main__':
     # print(answers)
     # print(data[0])
     # print(data[1])
-    mails_set = TrainingSet.TrainingSet(data[2000:3000], answers[2000:3000])
-    test_set = TrainingSet.TrainingSet(data[1000:2000], answers[1000:2000])
+    mails_set = TrainingSet.TrainingSet(data[1000:3000], answers[1000:3000])
+    test_set = TrainingSet.TrainingSet(data[:1000], answers[:1000])
 
     # /przygotowanie training set
     # stworzenie wytrenowanie i test
 
     kfold = Kfold(5, mails_set, "kfold1")
-    kfold.initBaseNetwork(500, [20, 1], (-0.01, 0.01), [Functions.Sigmoid, Functions.Sigmoid], Functions.DiffSquare)
+    kfold.initBaseNetwork(1000, [50, 1], (-0.01, 0.01), [Functions.Sigmoid, Functions.Sigmoid], Functions.DiffSquare)
 
-    kfold_result = kfold.proceedKfold(1, 100)
+    kfold_result = kfold.proceedKfold(1, 200)
 
-    network_tester = NetworkTester(kfold_result)
-    print(network_tester.test(test_set)[0])
+    # network_tester = NetworkTester(kfold_result)
+    # print(network_tester.test(test_set)[0])
     #/stworzenie wytrenowanie i test
 
     # ----zaladowanie kfolda i kontynuowanie trenowania----
-    # kfold: Kfold = Kfold.load("kfold1.pkl")
-    # kfold_result: NeuralNetwork = kfold.continueKfold()
-    #
-    # kfold_result.save("network")
+    kfold: Kfold = Kfold.load("kfold1.pkl")
+    kfold_result: NeuralNetwork = kfold.continueKfold()
+
+    kfold_result.save("network")
 
     # ----pobranie statystyk----
     # stats = kfold.stats
@@ -80,3 +80,13 @@ if __name__ == '__main__':
     #
     # tester = NetworkTester(network)
     # print(tester.test(test_set))
+
+
+    # ----statystyki ----
+    stats = kfold.stats
+
+    dane_wykresu0 = stats[0]
+    dane_wykresu1 = stats[1]
+
+    t = dane_wykresu0[0][0]  # wartosc pierwszej liczby z pary dla x = 0 (x - iteracja)
+    v = dane_wykresu0[0][1]
