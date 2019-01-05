@@ -3,7 +3,6 @@ from TrainingSet import TrainingSet
 from typing import List, Tuple, Type
 import numpy as np
 
-# TODO napisać formule - coś w stylu wspolczynnika poprawnych ale dla procentowych odpowiedzi
 class NetworkTester:
     def __init__(self, neural_network):
         self.tested_network = neural_network

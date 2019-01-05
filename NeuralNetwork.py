@@ -44,10 +44,10 @@ class NeuralNetwork:
         for neuronN in range(neurons_amount[0]):
             weight_vector = []
             for w in range(input_size+1):
-                weight_vector.append(uniform(weight_interval[0],weight_interval[1]))
+                weight_vector.append(uniform(weight_interval[0], weight_interval[1]))
             self.layers[0].append(Neuron.Neuron(weight_vector, act_functions[0]))
 
-        for layerK in range(1,len(neurons_amount),1):
+        for layerK in range(1, len(neurons_amount), 1):
             self.layers.append([])
             for neuronN in range(neurons_amount[layerK]):
                 weight_vector = []
@@ -170,14 +170,17 @@ class NeuralNetwork:
         print("###END OF TRAINING###")
         print("\nTrained from loss function %s to %s\n" % (start_loss, test_result[0]))
 
-    # TODO niech zwraca jeszcze statystyke
     def vTrain(self, training_set: TrainingSet, learning_rate: float,
-               iterations_limit: int, validation_set: TrainingSet) -> float:
+               iterations_limit: int, validation_set: TrainingSet) -> Tuple[float, List[Tuple[float, float]]]:
         assert learning_rate > 0
+
         network_tester: NetworkTester = NetworkTester(self)
         test_result: Tuple[float, float] = network_tester.test(training_set)
         validation_result: Tuple[float, float] = network_tester.test(validation_set)
+
         start_loss = test_result[0]
+        stats: List[Tuple[float, float]] = [(start_loss, validation_result[0])]
+
         print("###STARTING TRAINING...###\nBefore training:\nTarget function: %s\nValidation target function: %s" %
               (test_result[0], validation_result[0]))
 
@@ -211,6 +214,7 @@ class NeuralNetwork:
             test_result = new_result
             validation_result = new_validation_result
             iteration = iteration + 1
+            stats.append((test_result[0], validation_result[0]))
             print("\nAfter { %d } iterations:\nTraining target function: %s\nValidation target function: %s"
                   % (iteration, test_result[0], validation_result[0]))
 
@@ -222,10 +226,9 @@ class NeuralNetwork:
 
         print("###END OF TRAINING###")
         print("\nTrained from loss function %s to %s\n" % (start_loss, test_result[0]))
-        return validation_result[0]
+        return_tuple = (validation_result[0], stats)
+        return return_tuple
 
-    # def kfold_train(self):  # TODO
-    #     pass
     # /\/\ TRAINING STUFF /\/\
 
     def make_guess(self, input_vector: List[float]) -> List[float]:
