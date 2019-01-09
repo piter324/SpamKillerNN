@@ -34,14 +34,7 @@ class TrainingSet:
             second is from start to end
         """
 
-        # data1 = self.data[:start]
-        # for d in self.data[end:]:
-        #     data1.append(d.copy())
         data1 = self.data[:start] + self.data[end:]
-
-        # answers1 = self.answers[:start]
-        # for a in self.answers[end:]:
-        #     answers1.append(a.copy())
         answers1 = self.answers[:start] + self.answers[end:]
 
         data2 = self.data[start:end]
@@ -49,6 +42,9 @@ class TrainingSet:
 
         return [TrainingSet(data1, answers1), TrainingSet(data2, answers2)]
 
+
+# functions below were used only to test neural network during development, they generate sets of simple problems
+# they generate simple problem sets
 
 # x > y gives true
 def generate_random_set1(data_size: int) -> TrainingSet:

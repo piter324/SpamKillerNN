@@ -5,7 +5,8 @@ class BackPropMatrices:
     def __init__(self, neural_network):
         self.neural_network = neural_network
         self.dq_dykj_matrix: List[List[Union[float, None]]] = []  # dq/dykj
-        self.afunc_derivs_matrix: List[List[float]] = []  # ∂act_funckj(skj)/∂skj skj - sum from k-th layer's j-th neuron
+        # ∂act_funckj(skj)/∂skj skj - sum from k-th layer's j-th neuron
+        self.afunc_derivs_matrix: List[List[float]] = []
         self.y: List[List[float]] = []  # y[0] - input, y[k] k=1,2,... - output of k-1-th layer
 
         # initialize dq_dykj_matrix with Nones for each layer except last one

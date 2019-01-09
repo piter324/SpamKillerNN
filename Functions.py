@@ -52,7 +52,7 @@ class TanH(FuncAbstract):
         return 1-(TanH.func(x) ** 2)
 
 
-# loss functions
+# loss function
 class LossFuncAbstract:
     """Abstract class of loss function"""
     @staticmethod

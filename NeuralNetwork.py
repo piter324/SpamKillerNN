@@ -43,7 +43,7 @@ class NeuralNetwork:
                 # append new neuron to input layer
                 self.layers[layerK].append(Neuron.Neuron(weight_vector, act_functions[layerK]))
 
-    # \/\/ TRAINING STUFF \/\/
+    # \/\/ TRAINING METHODS \/\/
     def adjust_weights(self, adjust_matrix: List[List[List[float]]]):
         """Adjusts weights of all neurons in whole neural network."""
 
@@ -111,70 +111,79 @@ class NeuralNetwork:
         return gradient
 
     def train(self, training_set: TrainingSet, learning_rate: float, learning_target: float, iterations_limit: int):
+        """Simple training method, without validation set and overfitting detection."""
+        # check if parameters are legal
         assert 0 <= learning_target
         assert learning_rate > 0
+        assert iterations_limit > 0
 
-        network_tester: NetworkTester = NetworkTester(self)
-        test_result: float = network_tester.test(training_set)
-        start_loss = test_result
+        network_tester: NetworkTester = NetworkTester(self)  # create tester object
+        test_result: float = network_tester.test(training_set)  # check performance of the network before training
+        start_loss = test_result  # and save it
         print("###STARTING TRAINING...###\nBefore training:\nTarget function: %s" % test_result)
 
         iteration: int = 0
+        # traing until learning target or iteration limit is reached
         while test_result > learning_target and iteration < iterations_limit:
-            gradient: List[List[List[float]]] = self.calc_gradientj(training_set)
+            gradient: List[List[List[float]]] = self.calc_gradientj(training_set)  # get gradient of J
+            # calculate -b * (gradient of J)
             minus_beta_gradient = gradient.copy()
-            # multiply matrix by scalar
             minus_beta_gradient = MatrixMath.mul_scalar3d(minus_beta_gradient, -learning_rate)
 
-            self.adjust_weights(minus_beta_gradient)
-            new_result = network_tester.test(training_set)
-            if new_result > test_result:
+            self.adjust_weights(minus_beta_gradient)  # adjust weights by -b * (gradient of J)
+            new_result = network_tester.test(training_set)  # check new performance
+            if new_result > test_result:  # write warning if new performance is worse than before
                 print("###Target function diverges (learning rate might be too big)###")
-            test_result = new_result
-            iteration = iteration + 1
+            test_result = new_result  # update current performance
+            iteration += 1
             print("\nAfter { %d } iterations:\nTarget function: %s"
-                  % (iteration, test_result))
+                  % (iteration, test_result))  # print information about recent training iteration
 
         print("###END OF TRAINING###")
         print("\nTrained from loss function %s to %s\n" % (start_loss, test_result))
 
     def vtrain(self, training_set: TrainingSet, learning_rate: float,
                iterations_limit: int, validation_set: TrainingSet) -> Tuple[float, List[Tuple[float, float]]]:
+        """Training method with validation set and overfitting detection."""
+        # check if parameters are legal
         assert learning_rate > 0
+        assert iterations_limit > 0
 
-        network_tester: NetworkTester = NetworkTester(self)
-        test_result: float = network_tester.test(training_set)
+        network_tester: NetworkTester = NetworkTester(self)  # create tester object
+        test_result: float = network_tester.test(training_set)  # check performance of the network before training
         validation_result: float = network_tester.test(validation_set)
-        start_loss = test_result
-        stats: List[Tuple[float, float]] = [(start_loss, validation_result[0])]
+        start_loss = test_result  # save network performance
+        # stats is basically list of target function values for subsequent iterations
+        stats: List[Tuple[float, float]] = [(start_loss, validation_result)]  # save performance before first iteration
 
         print("###STARTING TRAINING...###\nBefore training:\nTarget function: %s\nValidation target function: %s" %
               (test_result, validation_result))
 
         iteration: int = 0
-        overfit_rating: float = 0
+        overfit_rating: float = 0 # "penatly points" for rising target function for validation set
         while iteration < iterations_limit:
-            gradient: List[List[List[float]]] = self.calc_gradientj(training_set)
+            gradient: List[List[List[float]]] = self.calc_gradientj(training_set)  # get gradient of J
+            # calculate -b * (gradient of J)
             minus_beta_gradient = gradient.copy()
-            # multiply matrix by scalar
             minus_beta_gradient = MatrixMath.mul_scalar3d(minus_beta_gradient, -learning_rate)
 
             print("ITERATION %d minus_beta_gradient: %s" % (iteration, minus_beta_gradient))
-            self.adjust_weights(minus_beta_gradient)
-            new_result = network_tester.test(training_set)
+            self.adjust_weights(minus_beta_gradient)  # adjust weights by -b * (gradient of J)
+            new_result = network_tester.test(training_set)  # check new performance
             new_validation_result = network_tester.test(validation_set)
-            if iteration > iterations_limit/2:
-                if new_validation_result > validation_result:
-                    print("### OVERFITTING! ###")
-                    overfit_rating += 1
-                elif overfit_rating > 0:
-                    overfit_rating -= 0.25
-            if overfit_rating >= 4:
+            if iteration > iterations_limit/2:  # if it's half the way - check if it's not overfitting
+                if new_validation_result > validation_result:  # if validation result is worse than previous
+                    print("### OVERFITTING! ###")  # print warning
+                    overfit_rating += 1  # and add +1 penalty points
+                elif overfit_rating > 0:  # if validation result is better than previous and rating is >0
+                    overfit_rating -= 0.25  # subtract 0.25 penalty points
+            if overfit_rating >= 4:  # if reached 4 penalty points - end training due to overfitting
                 test_result = new_result
                 validation_result = new_validation_result
                 break
-            if new_result > test_result:
+            if new_result > test_result:  # write warning if new performance is worse than before
                 print("###Target function diverges (learning rate might be too big)###")
+            # save current performance
             test_result = new_result
             validation_result = new_validation_result
             iteration += 1
@@ -186,23 +195,25 @@ class NeuralNetwork:
         print("\nTrained from loss function %s to %s\n" % (start_loss, test_result))
         return_tuple = (validation_result, stats)
         return return_tuple
-    # /\/\ TRAINING STUFF /\/\
+    # /\/\ TRAINING METHODS /\/\
 
     def make_guess(self, input_vector: List[float]) -> List[float]:
-        # Checking if input is legal.
+        # check if input is legal
         assert len(input_vector) == len(self.layers[0][0].weights)-1,\
             "Size of input_vector is (%d), but layer (0) expects input of size (%d+1):" \
             "\ninput_vector: %s\nself.layers[0][0].weights: %s" %\
             (len(input_vector), len(self.layers[0][0].weights)-1, input_vector, self.layers[0][0].weights)
 
-        # Start of processing.
-        result: List[float] = input_vector.copy()
-        for layerK in range(len(self.layers)):
+        # start of processing
+        # result vector is called so due to its target meaning, before then it is "currently processed vector"
+        result: List[float] = input_vector.copy()  # take input_vector that'll be gradually transformed into network output
+        for layerK in range(len(self.layers)):  # for each layer
             result.append(1)
-            iteration_result: List[float] = []
-            for neuronI in range(len(self.layers[layerK])):
+            iteration_result: List[float] = []  # initialize current layer's output vector
+            for neuronI in range(len(self.layers[layerK])):  # for each neuron in current layer
+                # append neuron's output to output vector
                 iteration_result.append(self.layers[layerK][neuronI].process_input(result)[0])
-            result = iteration_result
+            result = iteration_result  # substitute currently processed vector
         return result
 
     def get_weights(self) -> List[List[List[float]]]:
