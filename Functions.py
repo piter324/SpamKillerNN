@@ -3,8 +3,8 @@ import numpy as np
 import math
 
 
-# TODO add other functions (ReLU, _/ , _/- )
 class FuncAbstract:
+    """Abstract class of activation function"""
     @staticmethod
     def func(x: float):
         pass
@@ -37,7 +37,6 @@ class Identity(FuncAbstract):
 class TanH(FuncAbstract):
     @staticmethod
     def func(x: float) -> float:
-        # print("GOT x TO TANH: %d" % x)
         a = np.exp(x) - np.exp(-x)
         if math.isnan(a):
             print("GOT x %s but a is nan" % x)
@@ -55,6 +54,7 @@ class TanH(FuncAbstract):
 
 # loss functions
 class LossFuncAbstract:
+    """Abstract class of loss function"""
     @staticmethod
     def func(guess: List[float], answer: List[float]):
         pass
@@ -64,15 +64,9 @@ class LossFuncAbstract:
         pass
 
 
-# TODO moze funkcja bardziej lejkowa
 class DiffSquare(LossFuncAbstract):
     @staticmethod
     def func(guess: List[float], answer: List[float]) -> float:
-        #print("GUESS AND ANSWER %s %s" % (guess, answer))
-        #print(np.subtract(answer, guess))
-        #print(np.linalg.norm(np.subtract(answer, guess)) * np.linalg.norm(np.subtract(answer, guess)))
-        #print(np.linalg.norm(np.subtract(answer, guess)) ** 2)
-        #print("LOSS FUNCTION GAVE %s" % (np.linalg.norm(np.subtract(answer, guess))) ** 2)
         return (np.linalg.norm(np.subtract(answer, guess))) ** 2
 
     # ∂q/∂yLi L - last layer index, i - index of output neuron

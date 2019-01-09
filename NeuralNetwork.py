@@ -5,202 +5,166 @@ from BackPropMatrices import BackPropMatrices
 from TrainingSet import TrainingSet
 from NetworkTester import NetworkTester
 from MatrixMath import MatrixMath
-import numpy as np
-import time
 from random import uniform
 import pickle
 
 
 class NeuralNetwork:
-    # def __init__(self, layers_amount: int, neurons_amount: List[int], weight_matrix: List[List[float]],
-    #              act_functions: List[Type[Functions.FuncAbstract]], loss_function: Type[Functions.LossFuncAbstract]):
-
     def __init__(self, input_size: int, neurons_amount: List[int], weight_interval: Tuple[float, float],
-                act_functions: List[Type[Functions.FuncAbstract]], loss_function: Type[Functions.LossFuncAbstract]):
-        # \/ \/Checking if parameters are legal.\/ \/
+                 act_functions: List[Type[Functions.FuncAbstract]], loss_function: Type[Functions.LossFuncAbstract]):
+        # checking if parameters are legal
         assert weight_interval[0] < weight_interval[1]
-        # assert layers_amount > 0, "layers_amount(%d) is not greater than 0" % layers_amount
-        # assert len(neurons_amount) == layers_amount,\
-        #     "Size of neurons_amount list(%d) doesn't equal layers_amount(%d):\nneurons_amount: %s"\
-        #     % (len(neurons_amount), layers_amount, neurons_amount)
-        # assert len(weight_matrix) == layers_amount,\
-        #     "Size of weight_matrix list(%d) doesn't equal layer_amount(%d):\nweight_matrix: %s"\
-        #     % (len(weight_matrix), layers_amount, weight_matrix)
         assert len(act_functions) == len(neurons_amount),\
             "Size of act_functions list(%d) doesn't equal layers_amount(%d):\nact_functions: %s"\
             % (len(act_functions), len(neurons_amount), act_functions)
-        # for k in range(1, layers_amount):
-        #     assert neurons_amount[k-1] == len(weight_matrix[k])-1,\
-        #         "Size of layer's (%d) output is (%d), but layer (%d) expects input of size (%d+1):" \
-        #         "\nneurons_amount[%d]: %d\nlen(weight_matrix[%d]): %d (should be %d)" %\
-        #         (k-1, neurons_amount[k-1], k, len(weight_matrix[k]),
-        #          k-1, neurons_amount[k-1], k, len(weight_matrix[k]), neurons_amount[k-1]+1)
-        # /\ /\Checking if parameters are legal./\ /\
-        # Initializing variables.
+
+        # initializing variables.
         self.loss_function = loss_function
         self.layers: List[List[Neuron.Neuron]] = []
 
-        self.layers.append([])
-        for neuronN in range(neurons_amount[0]):
-            weight_vector = []
-            for w in range(input_size+1):
+        # initializing input layer with weights
+        self.layers.append([])  # append new layer (input layer)
+        for neuronN in range(neurons_amount[0]):  # add demanded amount of neurons to input layer
+            weight_vector = []  # initialize weight vector
+            for w in range(input_size+1):  # add input_size+1 weight values into weight_vector
+                # get random value from given interval and append it to weight_vector
                 weight_vector.append(uniform(weight_interval[0], weight_interval[1]))
-            self.layers[0].append(Neuron.Neuron(weight_vector, act_functions[0]))
+            self.layers[0].append(Neuron.Neuron(weight_vector, act_functions[0]))  # append new neuron to input layer
 
-        for layerK in range(1, len(neurons_amount), 1):
-            self.layers.append([])
-            for neuronN in range(neurons_amount[layerK]):
-                weight_vector = []
+        # initializing rest of layers with weights
+        for layerK in range(1, len(neurons_amount), 1):  # add demanded amount of layers
+            self.layers.append([])  # append new layer
+            for neuronN in range(neurons_amount[layerK]):  # add demanded amount of neurons to current layer
+                weight_vector = []  # initialize weight vector
+                # add appropriate amount of weight values into weight_vector
                 for w in range(neurons_amount[layerK-1]+1):
+                    # get random value from given interval and append it to weight_vector
                     weight_vector.append(uniform(weight_interval[0], weight_interval[1]))
+                # append new neuron to input layer
                 self.layers[layerK].append(Neuron.Neuron(weight_vector, act_functions[layerK]))
-        # for k in range(len(neurons_amount)):
-        #     print("LAYER %d" % k)
-        #     for n in range(neurons_amount[k]):
-        #         print(self.layers[k][n].activationFunction)
-        #         print(self.layers[k][n].weights)
 
     # \/\/ TRAINING STUFF \/\/
     def adjust_weights(self, adjust_matrix: List[List[List[float]]]):
-        # Checking if adjust_matrix is legal.
-        # TODO it's something wrong with this check for sure
-        assert len(adjust_matrix) == len(self.layers)
-        for k in range(len(self.layers)):
-            for i in range(len(self.layers[k])):
-                assert len(adjust_matrix[k][i]) == len(self.layers[k][i].weights)
-        # Adjusting weights.
-        for layerK in range(len(self.layers)):
-            for neuronI in range(len(self.layers[layerK])):
+        """Adjusts weights of all neurons in whole neural network."""
+
+        for layerK in range(len(self.layers)):  # for each layer
+            for neuronI in range(len(self.layers[layerK])):  # for each neuron in current layer
+                # adjust weights using corresponding weight vector from adjust_matrix
                 self.layers[layerK][neuronI].adjust_weights(adjust_matrix[layerK][neuronI])
 
     def examine_single_pair(self, input_data: List[float], answer: List[float]) -> List[List[List[float]]]:
-        """Proceeds one training example and returns matrix of loss functions derivatives
-        in respect to all weights - dq/dwkij"""
-        back_prop_matrices = BackPropMatrices(self)
+        """
+        Examines one training example
+        :param input_data: input data for neural network
+        :param answer: the correct answer for given input_data
+        :return: matrix of loss functions derivatives in respect to all weights - dq/dwkij
+        """
+
+        back_prop_matrices = BackPropMatrices(self)  # create BackPropMatrices object used to make further calculations
 
         # process result and save derivatives of activation function and layers' outputs
-        result: List[float] = input_data.copy()
-        for layerK in range(len(self.layers)):
+        # result vector is called so due to its target meaning, before then it is "currently processed vector"
+        result: List[float] = input_data.copy()  # take input_data that'll be gradually transformed into network output
+        for layerK in range(len(self.layers)):  # for each layer
             result.append(1)
-            back_prop_matrices.y.append(result.copy())
-            iteration_result: List[float] = []
-            for neuronI in range(len(self.layers[layerK])):
+            back_prop_matrices.y.append(result.copy())  # save previous layer's output (or input if layerK == 0)
+            iteration_result: List[float] = []  # initialize current layer's output vector
+            for neuronI in range(len(self.layers[layerK])):  # for each neuron in current layer
+                # get neuron's result
                 neuron_output: Tuple[float, float] = self.layers[layerK][neuronI].process_input(result)
-                iteration_result.append(neuron_output[0])
+                iteration_result.append(neuron_output[0])  # append neuron's output to output vector
+                # save derivative of neuron's activation function at point determined by neuron's sum
                 back_prop_matrices.afunc_derivs_matrix[layerK][neuronI] =\
                     self.layers[layerK][neuronI].activationFunction.derivative(neuron_output[1])
-            result = iteration_result
-        back_prop_matrices.y.append(result.copy())
-        #print("Input %s gave result: %s" % (input_data, result))
-        #print("back_prop_matrices.y: %s" % back_prop_matrices.y)
+            result = iteration_result  # substitute currently processed vector
+        back_prop_matrices.y.append(result.copy())  # save last layer's output
+        # calculate all dq/dykj for last layer (k = len(self.layers)-1)
         back_prop_matrices.init_last_dq_dykj(result.copy(), answer.copy())
 
-        # calculating weights' derivatives matrix
-        weight_derivs_matrix: List[List[List[float]]] = []  # dq/dwkij
-        for layerK in range(len(self.layers)-1, -1, -1):
-            layers_derivs_vectors: List[List[float]] = []
-            for neuronI in range(len(self.layers[layerK])):
-                derivs_vector: List[float] = []
-                for weightJ in range(len(self.layers[layerK][neuronI].weights)):
-                    #print("LAYER: %d ; NEURON: %d ; WEIGHT: %d" % (layerK, neuronI, weightJ))
+        # calculate weights' derivatives matrix
+        weight_derivs_matrix: List[List[List[float]]] = []  # matrix of all dq/dwkij (k - layer, i - neuron, j - weight)
+        for layerK in range(len(self.layers)-1, -1, -1):  # for each layer but going backwards
+            layers_derivs_vectors: List[List[float]] = []  # initialize list of derivatives for each i x j in current k
+            for neuronI in range(len(self.layers[layerK])):  # for each neuron in current layer
+                derivs_vector: List[float] = []  # initialize vector of derivatives for each j in current i
+                for weightJ in range(len(self.layers[layerK][neuronI].weights)):  # for each weight in current neuron
+                    # calculate dq/dwkij = ∂act_funcki(ski)/∂ski * y(k-1)j * dq/dyki
                     dqdw: float = back_prop_matrices.afunc_derivs_matrix[layerK][neuronI] *\
                                   back_prop_matrices.y[layerK][weightJ]
+                    # above: it is layerK without -1 due to way of indexing - look y list in BackPropMatrices class
                     dqdw = dqdw * back_prop_matrices.get_dq_dykj(layerK, neuronI)
                     derivs_vector.append(dqdw)
                 layers_derivs_vectors.append(derivs_vector)
-            weight_derivs_matrix = [layers_derivs_vectors] + weight_derivs_matrix  # prepend instead of append
-        #print("WEIGHT %s" % weight_derivs_matrix)
+            # prepend result because it goes backwards
+            weight_derivs_matrix = [layers_derivs_vectors] + weight_derivs_matrix
         return weight_derivs_matrix
 
     def calc_gradientj(self, training_set: TrainingSet) -> List[List[List[float]]]:
         # gradient of J(w) function that we want to minimize
         gradient: List[List[List[float]]] = self.examine_single_pair(training_set.data[0], training_set.answers[0])
-        #print("GRADIENT: %s" % gradient)
         for pairP in range(1, len(training_set.data), 1):
-            #print("GRADIENT: %s" % gradient)
-            #time.sleep(1)
-            gradient = MatrixMath.add3d(gradient, self.examine_single_pair(training_set.data[pairP], training_set.answers[pairP]))
-            #gradient = np.add(gradient, self.examine_single_pair(training_set.data[pairP], training_set.answers[pairP]))
-        #print("GRADIENT %s" % gradient)
+            gradient = MatrixMath.add3d(gradient, self.examine_single_pair(training_set.data[pairP],
+                                                                           training_set.answers[pairP]))
         scalar: float = 1 / len(training_set.data)
-        #time.sleep(1)
-        #print("GRADIENT 1 %s" % gradient)
-        # multiply matrix by scalar cause numpy has no such function :)
+        # multiply matrix by scalar
         gradient = MatrixMath.mul_scalar3d(gradient, scalar)
-        #print("GRADIENT 2 %s" % gradient)
         return gradient
 
-    # TODO maybe we want some more complex method (optionally)
-    # TODO momentum - adjust = calculated_adjust + past_adjust * momentum
-    def train(self, training_set: TrainingSet, learning_rate: float, learning_target: float):
+    def train(self, training_set: TrainingSet, learning_rate: float, learning_target: float, iterations_limit: int):
         assert 0 <= learning_target
         assert learning_rate > 0
+
         network_tester: NetworkTester = NetworkTester(self)
-        test_result: Tuple[float, float] = network_tester.test(training_set)
-        start_loss = test_result[0]
-        print("###STARTING TRAINING...###\nBefore training:\nTarget function: %s\nCorrect ratio: %s\n" %
-              (test_result[0], test_result[1]))
+        test_result: float = network_tester.test(training_set)
+        start_loss = test_result
+        print("###STARTING TRAINING...###\nBefore training:\nTarget function: %s" % test_result)
 
         iteration: int = 0
-        while test_result[0] > learning_target and iteration < 100:
+        while test_result > learning_target and iteration < iterations_limit:
             gradient: List[List[List[float]]] = self.calc_gradientj(training_set)
-            #print(gradient)
             minus_beta_gradient = gradient.copy()
-            #print(minus_beta_gradient)
             # multiply matrix by scalar
             minus_beta_gradient = MatrixMath.mul_scalar3d(minus_beta_gradient, -learning_rate)
 
-            #print("ITERATION %d minus_beta_gradient: %s" % (iteration, minus_beta_gradient))
-            #time.sleep(1)
             self.adjust_weights(minus_beta_gradient)
             new_result = network_tester.test(training_set)
-            if new_result[0] > test_result[0]:
-                print("#####Too big learning rate!#####") # TODO this is often misleading, should change this
+            if new_result > test_result:
+                print("###Target function diverges (learning rate might be too big)###")
             test_result = new_result
             iteration = iteration + 1
             print("\nAfter { %d } iterations:\nTarget function: %s"
-                  % (iteration, test_result[0]))
-
-            # TODO for debug
-            # print actual weights
-            # for k in range(len(self.layers)):
-            #     for n in range(len(self.layers[k])):
-            #         print(self.layers[k][n].weights)
+                  % (iteration, test_result))
 
         print("###END OF TRAINING###")
-        print("\nTrained from loss function %s to %s\n" % (start_loss, test_result[0]))
+        print("\nTrained from loss function %s to %s\n" % (start_loss, test_result))
 
-    def vTrain(self, training_set: TrainingSet, learning_rate: float,
+    def vtrain(self, training_set: TrainingSet, learning_rate: float,
                iterations_limit: int, validation_set: TrainingSet) -> Tuple[float, List[Tuple[float, float]]]:
         assert learning_rate > 0
 
         network_tester: NetworkTester = NetworkTester(self)
-        test_result: Tuple[float, float] = network_tester.test(training_set)
-        validation_result: Tuple[float, float] = network_tester.test(validation_set)
-
-        start_loss = test_result[0]
+        test_result: float = network_tester.test(training_set)
+        validation_result: float = network_tester.test(validation_set)
+        start_loss = test_result
         stats: List[Tuple[float, float]] = [(start_loss, validation_result[0])]
 
         print("###STARTING TRAINING...###\nBefore training:\nTarget function: %s\nValidation target function: %s" %
-              (test_result[0], validation_result[0]))
+              (test_result, validation_result))
 
         iteration: int = 0
         overfit_rating: float = 0
         while iteration < iterations_limit:
             gradient: List[List[List[float]]] = self.calc_gradientj(training_set)
-            #print(gradient)
             minus_beta_gradient = gradient.copy()
-            #print(minus_beta_gradient)
             # multiply matrix by scalar
             minus_beta_gradient = MatrixMath.mul_scalar3d(minus_beta_gradient, -learning_rate)
 
-            #print("ITERATION %d minus_beta_gradient: %s" % (iteration, minus_beta_gradient))
-            #time.sleep(1)
+            print("ITERATION %d minus_beta_gradient: %s" % (iteration, minus_beta_gradient))
             self.adjust_weights(minus_beta_gradient)
             new_result = network_tester.test(training_set)
             new_validation_result = network_tester.test(validation_set)
-            if(iteration > iterations_limit/2):
-                if new_validation_result[0] > validation_result[0]:
+            if iteration > iterations_limit/2:
+                if new_validation_result > validation_result:
                     print("### OVERFITTING! ###")
                     overfit_rating += 1
                 elif overfit_rating > 0:
@@ -209,26 +173,19 @@ class NeuralNetwork:
                 test_result = new_result
                 validation_result = new_validation_result
                 break
-            if new_result[0] > test_result[0]:
-                print("###Target function diverges (maybe too big learning rate)###")
+            if new_result > test_result:
+                print("###Target function diverges (learning rate might be too big)###")
             test_result = new_result
             validation_result = new_validation_result
-            iteration = iteration + 1
-            stats.append((test_result[0], validation_result[0]))
+            iteration += 1
+            stats.append((test_result, validation_result))
             print("\nAfter { %d } iterations:\nTraining target function: %s\nValidation target function: %s"
-                  % (iteration, test_result[0], validation_result[0]))
-
-            # TODO for debug
-            # print actual weights
-            # for k in range(len(self.layers)):
-            #     for n in range(len(self.layers[k])):
-            #         print(self.layers[k][n].weights)
+                  % (iteration, test_result, validation_result))
 
         print("###END OF TRAINING###")
-        print("\nTrained from loss function %s to %s\n" % (start_loss, test_result[0]))
-        return_tuple = (validation_result[0], stats)
+        print("\nTrained from loss function %s to %s\n" % (start_loss, test_result))
+        return_tuple = (validation_result, stats)
         return return_tuple
-
     # /\/\ TRAINING STUFF /\/\
 
     def make_guess(self, input_vector: List[float]) -> List[float]:
@@ -246,7 +203,6 @@ class NeuralNetwork:
             for neuronI in range(len(self.layers[layerK])):
                 iteration_result.append(self.layers[layerK][neuronI].process_input(result)[0])
             result = iteration_result
-        #print("Input %s gave result: %s" % (input_vector, result))
         return result
 
     def get_weights(self) -> List[List[List[float]]]:
@@ -264,7 +220,7 @@ class NeuralNetwork:
                 self.layers[layerK][neuronI].weights = weight_matrix[layerK][neuronI].copy()
 
     def save(self, file_name: Union[str, None]):
-        if(file_name is None):
+        if file_name is None:
             file_name = "network" + str(id(self)) + ".pkl"
         with open(file_name, 'wb') as output:
             pickle.dump(self, output, pickle.HIGHEST_PROTOCOL)
