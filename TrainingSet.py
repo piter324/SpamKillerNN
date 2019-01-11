@@ -44,7 +44,6 @@ class TrainingSet:
 
 
 # functions below were used only to test neural network during development, they generate sets of simple problems
-# they generate simple problem sets
 
 # x > y gives true
 def generate_random_set1(data_size: int) -> TrainingSet:
